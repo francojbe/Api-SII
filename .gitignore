@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+temp_pdfs/
+*.pdf
+*.png
+.env
+.venv/
+env/
+venv/
+node_modules/
+.DS_Store
