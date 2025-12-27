@@ -6,8 +6,8 @@ API_URL = "http://localhost:8000/sii/rcv-resumen"
 API_KEY = "mi_llave_secreta_123"
 
 payload = {
-    "rut": "25723649-8",
-    "clave": "Franco25#"
+    "rut": "TU_RUT_AQUI",
+    "clave": "TU_CLAVE_AQUI"
 }
 
 headers = {
