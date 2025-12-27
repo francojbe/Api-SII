@@ -9,6 +9,15 @@ class SIIScraper:
         self.login_url = "https://zeusr.sii.cl/AUT2000/InicioAutenticacion/IngresoRutClave.html?https://misiir.sii.cl/cgi_misii/siihome.cgi"
         self.target_url = "https://www2.sii.cl/carpetatributaria/generarcteregular"
 
+    async def _login(self, page):
+        """Método interno para manejar la autenticación."""
+        print(f"[{self.rut}] Autenticando...")
+        await page.goto(self.login_url, wait_until="networkidle")
+        await page.fill("#rutcntr", self.rut.replace(".", "").replace("-", ""))
+        await page.fill("#clave", self.clave)
+        await page.click("#bt_ingresar")
+        await page.wait_for_load_state("networkidle")
+
     async def get_carpeta_tributaria(self, output_path, datos_envio=None):
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -20,12 +29,7 @@ class SIIScraper:
 
             try:
                 # 1. Login
-                print(f"[{self.rut}] Autenticando...")
-                await page.goto(self.login_url, wait_until="networkidle")
-                await page.fill("#rutcntr", self.rut.replace(".", "").replace("-", ""))
-                await page.fill("#clave", self.clave)
-                await page.click("#bt_ingresar")
-                await page.wait_for_load_state("networkidle")
+                await self._login(page)
                 
                 # 2. Navegar a la página de generación
                 print(f"[{self.rut}] Navegando a Carpeta...")
@@ -79,13 +83,11 @@ class SIIScraper:
 
                 # 5. Descarga Final (Botón Verde "Ver PDF Generado")
                 print(f"[{self.rut}] Descargando resultado final...")
-                # El botón final puede ser 'Generar Carpeta' o 'Ver PDF Generado' según el paso
                 btn_final = page.locator("button:visible:has-text('Ver PDF Generado'), button:visible:has-text('Generar Carpeta')")
                 
                 try:
                     await btn_final.first.wait_for(state="visible", timeout=20000)
                 except:
-                    # Si no aparece, quizás ya estamos en la pantalla final pero el texto es ligeramente distinto
                     btn_final = page.get_by_role("button").filter(has_text="PDF")
 
                 print(f"[{self.rut}] Iniciando descarga...")
@@ -95,12 +97,67 @@ class SIIScraper:
                 download = await download_info.value
                 await download.save_as(output_path)
                 
-                print(f"[{self.rut}] ✅ ¡MISIÓN CUMPLIDA! Archivo guardado en: {output_path}")
+                print(f"[{self.rut}] ✅ Carpeta guardada en: {output_path}")
                 return True
 
             except Exception as e:
-                print(f"[{self.rut}] ❌ Error en el proceso: {str(e)}")
-                await page.screenshot(path="error_final_absoluto.png")
+                print(f"[{self.rut}] ❌ Error en Carpeta: {str(e)}")
                 return False
             finally:
                 await browser.close()
+
+    async def get_rcv_resumen(self):
+        """Extrae el resumen de compras (RCV) del periodo actual."""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(
+                viewport={'width': 1366, 'height': 768},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
+            page = await context.new_page()
+
+            try:
+                # 1. Login
+                await self._login(page)
+
+                # 2. Navegar directamente al RCV
+                print(f"[{self.rut}] Navegando al Registro de Compras y Ventas...")
+                await page.goto("https://www4.sii.cl/consdcvinternetui/#/index", wait_until="networkidle")
+                
+                # 3. Click en Consultar (por defecto viene el mes actual)
+                print(f"[{self.rut}] Consultando periodo actual...")
+                btn_consultar = page.locator("button:has-text('Consultar')")
+                await btn_consultar.click()
+                await page.wait_for_load_state("networkidle")
+                await asyncio.sleep(2) # Esperar a que cargue la tabla dinámica
+
+                # 4. Extraer datos de la tabla de resumen de COMPRAS
+                print(f"[{self.rut}] Extrayendo datos de la tabla...")
+                
+                resumen = await page.evaluate("""() => {
+                    const rows = Array.from(document.querySelectorAll('table tbody tr'));
+                    return rows.map(row => {
+                        const cols = row.querySelectorAll('td');
+                        if (cols.length >= 6) {
+                            return {
+                                tipo_documento: cols[0].innerText.trim(),
+                                total_documentos: cols[1].innerText.trim(),
+                                monto_exento: cols[2].innerText.trim(),
+                                monto_neto: cols[3].innerText.trim(),
+                                iva_recuperable: cols[4].innerText.trim(),
+                                monto_total: cols[cols.length - 1].innerText.trim()
+                            };
+                        }
+                        return null;
+                    }).filter(r => r !== null);
+                }""")
+
+                print(f"[{self.rut}] ✅ Datos RCV extraídos con éxito.")
+                return resumen
+
+            except Exception as e:
+                print(f"[{self.rut}] ❌ Error en RCV: {str(e)}")
+                return None
+            finally:
+                await browser.close()
+

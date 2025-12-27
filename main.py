@@ -23,6 +23,10 @@ class CarpetaRequest(BaseModel):
     dest_correo: str
     dest_institucion: Optional[str] = "OTRA INSTITUCION"
 
+class RCVRequest(BaseModel):
+    rut: str
+    clave: str
+
 # Directorio para archivos generados
 TEMP_DIR = "temp_pdfs"
 if not os.path.exists(TEMP_DIR):
@@ -40,6 +44,33 @@ def cleanup_file(path: str):
 @app.get("/")
 def health_check():
     return {"status": "online", "service": "automatizaciones-sii"}
+
+@app.post("/sii/rcv-resumen")
+async def api_rcv_resumen(
+    req: RCVRequest, 
+    x_api_key: str = Header(None)
+):
+    # Validación básica de API Key
+    if x_api_key != API_KEY_CREDENTIAL:
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+
+    scraper = SIIScraper(req.rut, req.clave)
+    
+    # Ejecutar el scraper
+    data = await scraper.get_rcv_resumen()
+    
+    if data is None:
+        raise HTTPException(
+            status_code=500, 
+            detail="Error al extraer RCV. Verifica credenciales o el estado de la web del SII."
+        )
+    
+    return {
+        "status": "success",
+        "rut": req.rut,
+        "periodo": "actual",
+        "resumen_compras": data
+    }
 
 @app.post("/sii/descargar-carpeta")
 async def api_descargar_carpeta(
