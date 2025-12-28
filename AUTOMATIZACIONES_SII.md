@@ -57,6 +57,28 @@ Este documento detalla diversos procesos del **Servicio de Impuestos Internos (S
     *   Detección temprana de cambios estructurales en clientes/proveedores.
 *   **Dificultad Estimada:** Media.
 
+## 8. Consolidación Anual de RCV
+*   **Descripción:** Extracción automática de los 12 meses de un año calendario en un solo proceso.
+*   **Valor Agregado (Dolencia Real):**
+    *   El SII solo permite bajar meses individuales. El bot puede recorrer el año completo.
+    *   Generación de un "Libro de Compra/Venta Anual" en un solo archivo Excel/CSV.
+    *   Ahorro masivo de tiempo en auditorías de cierre de año.
+*   **Dificultad Estimada:** Media.
+
+## 9. Monitoreo de Peticiones Administrativas (PA)
+*   **Descripción:** Seguimiento de solicitudes de "Devolución por pago en exceso" (Rectificatorias F29/F22).
+*   **Valor Agregado:**
+    *   Alertas de cambio de estado (ej: de "Pendiente" a "Aprobada").
+    *   Evita que el contador tenga que entrar a revisar "si ya salió la devolución" para cada cliente.
+*   **Dificultad Estimada:** Media.
+
+## 10. Auditoría Cruzada (SII vs. ERP)
+*   **Descripción:** Comparación automática de los registros del SII con la data del software contable del cliente.
+*   **Valor Agregado:**
+    *   Detección de facturas recibidas que no han sido ingresadas al ERP (Aprovechamiento de IVA).
+    *   Identificación de facturas emitidas no registradas (Riesgo de multas).
+*   **Dificultad Estimada:** Media - Alta (requiere integración con Excel/API del ERP).
+
 ---
 
 ## Ventajas Técnicas de la Solución Actual

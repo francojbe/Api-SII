@@ -6,6 +6,7 @@ import os
 import uuid
 import asyncio
 from scraper import SIIScraper
+from scraper_anual import SIIScraperAnual
 
 app = FastAPI(
     title="Cerebro SII - Automatizaciones",
@@ -24,6 +25,10 @@ class CarpetaRequest(BaseModel):
     dest_institucion: Optional[str] = "OTRA INSTITUCION"
 
 class RCVRequest(BaseModel):
+    rut: str
+    clave: str
+
+class RCVAnualRequest(BaseModel):
     rut: str
     clave: str
 
@@ -114,6 +119,28 @@ async def api_descargar_carpeta(
         filename=f"Carpeta_Tributaria_{req.rut_dueño}.pdf",
         media_type='application/pdf'
     )
+
+@app.post("/sii/rcv-anual-consolidado")
+async def api_rcv_anual(
+    req: RCVAnualRequest, 
+    x_api_key: str = Header(None)
+):
+    if x_api_key != API_KEY_CREDENTIAL:
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+
+    scraper = SIIScraperAnual(req.rut, req.clave)
+    data = await scraper.get_rcv_ultimos_12_meses()
+    
+    if data is None:
+        raise HTTPException(
+            status_code=500, 
+            detail="Error al extraer RCV anual. Verifica credenciales o el estado de la web del SII."
+        )
+    
+    return {
+        "status": "success",
+        "data": data
+    }
 
 if __name__ == "__main__":
     import uvicorn
