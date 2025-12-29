@@ -68,8 +68,36 @@ class SIIScraperAnual(SIIScraper):
                         await asyncio.sleep(2)
                         await page.wait_for_load_state("networkidle")
 
-                        # Extraer data
-                        registros = await page.evaluate("""() => {
+                        # --- EXTRACCIÓN DE COMPRAS ---
+                        print(f"[{self.rut}] Extrayendo Compras {mes_str}/{anio_str}...")
+                        await page.click("a[href='#compra/']")
+                        await asyncio.sleep(1)
+                        await page.wait_for_load_state("networkidle")
+                        
+                        compras = await page.evaluate("""() => {
+                            const rows = Array.from(document.querySelectorAll('table tbody tr'));
+                            return rows.map(row => {
+                                const cols = row.querySelectorAll('td');
+                                if (cols.length >= 6) {
+                                    return {
+                                        tipo_doc: cols[0].innerText.trim(),
+                                        cantidad: cols[1].innerText.trim(),
+                                        neto: cols[3].innerText.trim(),
+                                        iva: cols[4].innerText.trim(),
+                                        total: cols[cols.length - 1].innerText.trim()
+                                    };
+                                }
+                                return null;
+                            }).filter(r => r !== null);
+                        }""")
+                        
+                        # --- EXTRACCIÓN DE VENTAS ---
+                        print(f"[{self.rut}] Extrayendo Ventas {mes_str}/{anio_str}...")
+                        await page.click("a[href='#venta/']")
+                        await asyncio.sleep(1)
+                        await page.wait_for_load_state("networkidle")
+                        
+                        ventas = await page.evaluate("""() => {
                             const rows = Array.from(document.querySelectorAll('table tbody tr'));
                             return rows.map(row => {
                                 const cols = row.querySelectorAll('td');
@@ -88,7 +116,8 @@ class SIIScraperAnual(SIIScraper):
                         
                         consolidado["data"].append({
                             "periodo": f"{anio_str}-{mes_str}",
-                            "registros": registros
+                            "compras": compras,
+                            "ventas": ventas
                         })
                         print(f"[{self.rut}] ✅ {mes_str}/{anio_str} completado.")
 
