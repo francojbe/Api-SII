@@ -79,6 +79,22 @@ Este documento detalla diversos procesos del **Servicio de Impuestos Internos (S
     *   Identificación de facturas emitidas no registradas (Riesgo de multas).
 *   **Dificultad Estimada:** Media - Alta (requiere integración con Excel/API del ERP).
 
+## 11. Declaración y Consulta de Propuesta F29
+*   **Descripción:** Automatización de la consulta de la Propuesta de Formulario 29 que genera el SII.
+*   **Lógica del Proceso:**
+    1.  **Registro de Compras y Ventas (RCV):** Base para el cálculo.
+    2.  **Cálculo del IVA:** Débito (Ventas) vs Crédito (Compras).
+    3.  **PPM y Retenciones:** Cálculo automático basado en información histórica.
+    4.  **Impuesto Único (Sueldos):** Si aplica, este monto se debe extraer directamente de las liquidaciones de sueldo (Fuente externa al SII).
+*   **Estrategia de Automatización (Modo Seguro):**
+    1.  Login y navegación a "Declarar IVA".
+    2.  Lectura de montos propuestos (Débitos, Créditos, A Pagar).
+    3.  Comparación con ERP/Contabilidad interna antes de aceptar.
+*   **Valor Agregado:**
+    *   Auditoría preventiva antes de declarar.
+    *   Alerta temprana de discrepancias entre el SII y la contabilidad interna.
+*   **Dificultad Estimada:** Media - Alta (Requiere manejo delicado de navegación para no enviar por error).
+
 ---
 
 ## Ventajas Técnicas de la Solución Actual

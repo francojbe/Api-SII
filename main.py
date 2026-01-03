@@ -32,6 +32,13 @@ class RCVAnualRequest(BaseModel):
     rut: str
     clave: str
 
+class F29Request(BaseModel):
+    rut: str
+    clave: str
+    anio: str
+    mes: str
+    es_propuesta: Optional[bool] = True
+
 # Directorio para archivos generados
 TEMP_DIR = "temp_pdfs"
 if not os.path.exists(TEMP_DIR):
@@ -135,6 +142,28 @@ async def api_rcv_anual(
         raise HTTPException(
             status_code=500, 
             detail="Error al extraer RCV anual. Verifica credenciales o el estado de la web del SII."
+        )
+    
+    return {
+        "status": "success",
+        "data": data
+    }
+
+@app.post("/sii/f29-datos")
+async def api_f29_datos(
+    req: F29Request, 
+    x_api_key: str = Header(None)
+):
+    if x_api_key != API_KEY_CREDENTIAL:
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+
+    scraper = SIIScraper(req.rut, req.clave)
+    data = await scraper.get_f29_data(req.anio, req.mes, req.es_propuesta)
+    
+    if data is None:
+        raise HTTPException(
+            status_code=500, 
+            detail="Error al extraer datos del F29. Verifica credenciales o el estado de la web del SII."
         )
     
     return {
