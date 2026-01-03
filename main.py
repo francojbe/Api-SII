@@ -158,12 +158,19 @@ async def api_f29_datos(
         raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
 
     scraper = SIIScraper(req.rut, req.clave)
-    data = await scraper.get_f29_data(req.anio, req.mes, req.es_propuesta)
+    
+    # Si pide la propuesta de diciembre o no especifica mes/año histórico, usamos la navegación desde Home (robusta)
+    if req.es_propuesta:
+        print(f"[{req.rut}] Iniciando extracción robusta de propuesta desde Home...")
+        data = await scraper.navigate_to_f29_from_home()
+    else:
+        # Consulta histórica tradicional
+        data = await scraper.get_f29_data(req.anio, req.mes, es_propuesta=False)
     
     if data is None:
         raise HTTPException(
             status_code=500, 
-            detail="Error al extraer datos del F29. Verifica credenciales o el estado de la web del SII."
+            detail="Error al extraer datos del F29. Verifica si el periodo está disponible o las credenciales."
         )
     
     return {
@@ -173,5 +180,4 @@ async def api_f29_datos(
 
 if __name__ == "__main__":
     import uvicorn
-    # En producción (Docker/Easypanel), el puerto lo maneja el host
     uvicorn.run(app, host="0.0.0.0", port=8000)
