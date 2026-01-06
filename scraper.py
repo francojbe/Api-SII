@@ -708,24 +708,44 @@ class SIIScraper:
                             
                             # Estrategia mejorada: Esperar a que el input tenga valor (no vacío)
                             valor = await page.evaluate(f"""(c) => {{
-                                // Estrategia A: ID directo (Formato standard SII)
-                                const possibleIds = ['valCode' + c, 'code' + c, 'cod_' + c, 'frm_code' + c];
-                                for (const id of possibleIds) {{
-                                    const el = document.getElementById(id) || document.querySelector(`input[id$="${{id}}"]`);
-                                    if (el && el.value) return el.value;
-                                }}
+                                const cleanNum = (str) => {{
+                                    if (!str) return null;
+                                    const cleaned = str.replace(/[^0-9]/g, '');
+                                    return cleaned.length > 0 ? cleaned : null;
+                                }};
+
+                                // 1. Búsqueda por ID Específico (Alta confianza)
+                                // El SII usa 'valCode' + codigo para los inputs modificables
+                                const exactInput = document.getElementById('valCode' + c) || 
+                                                 document.getElementById('code' + c) ||
+                                                 document.querySelector(`input[name="valCode${{c}}"]`);
+                                if (exactInput && exactInput.value) return exactInput.value;
+
+                                // 2. Búsqueda Semántica en Tabla (Media confianza)
+                                // Buscamos la celda que tenga el codigo entre corchetes [538]
+                                const labelTd = Array.from(document.querySelectorAll('td, label')).find(el => el.innerText.includes('[' + c + ']'));
                                 
-                                // Estrategia B: Búsqueda semántica (Texto codigo -> Input cercano)
-                                // Buscamos celdas que CONTENGAN el código [538]
-                                const label = Array.from(document.querySelectorAll('td')).find(td => td.innerText.includes('[' + c + ']'));
-                                if (label) {{
-                                    const row = label.closest('tr');
+                                if (labelTd) {{
+                                    const row = labelTd.closest('tr');
                                     if (row) {{
-                                        const input = row.querySelector('input');
-                                        if (input) return input.value;
-                                        // Si es texto estatico
-                                        const values = Array.from(row.querySelectorAll('td')).filter(td => /[0-9]/.test(td.innerText));
-                                        if (values.length > 1) return values[values.length - 1].innerText; // Usualmente la ultima col es monto
+                                        // A. Buscar input en la misma fila
+                                        const rowInput = row.querySelector('input');
+                                        if (rowInput && rowInput.value) return rowInput.value;
+
+                                        // B. Buscar celda de valor (texto numérico)
+                                        // Filtramos celdas que NO sean la etiqueta y que parezcan dinero (contienen digitos)
+                                        const cells = Array.from(row.querySelectorAll('td div, td'));
+                                        
+                                        // Buscamos de derecha a izquierda (usualmente el monto está al final)
+                                        for (let i = cells.length - 1; i >= 0; i--) {{
+                                            const txt = cells[i].innerText;
+                                            // Ignorar si es el mismo label o si parece texto largo (títulos)
+                                            if (txt.includes('[' + c + ']')) continue;
+                                            if (txt.includes('TOTAL') || txt.includes('titulo')) continue;
+                                            
+                                            // Si limpiando queda un número, es nuestro candidato
+                                            if (cleanNum(txt)) return txt;
+                                        }}
                                     }}
                                 }}
                                 
