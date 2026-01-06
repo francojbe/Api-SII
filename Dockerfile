@@ -16,8 +16,7 @@ RUN playwright install chromium
 COPY . .
 
 # Puerto donde corre FastAPI
-EXPOSE 8000
-
+EXPOSE 8001
 # Comando para iniciar la aplicación
 # Usamos uvicorn para correr la API
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]

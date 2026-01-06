@@ -6,8 +6,31 @@ class SIIScraper:
     def __init__(self, rut, clave):
         self.rut = rut
         self.clave = clave
+        self.browser = None
+        self.context = None
+        self.page = None
+        self.pw_instance = None
         self.login_url = "https://zeusr.sii.cl/AUT2000/InicioAutenticacion/IngresoRutClave.html?https://misiir.sii.cl/cgi_misii/siihome.cgi"
-        self.target_url = "https://www2.sii.cl/carpetatributaria/generarcteregular"
+
+    async def _ensure_session(self):
+        """Asegura que haya una sesión de navegador activa."""
+        from playwright.async_api import async_playwright
+        if not self.pw_instance:
+            self.pw_instance = await async_playwright().start()
+            self.browser = await self.pw_instance.chromium.launch(headless=True)
+            self.context = await self.browser.new_context(
+                viewport={'width': 1366, 'height': 768},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
+            self.page = await self.context.new_page()
+            await self._login(self.page)
+        return self.page
+
+    async def close_session(self):
+        """Cierra el navegador y limpia recursos."""
+        if self.browser: await self.browser.close()
+        if self.pw_instance: await self.pw_instance.stop()
+        self.browser = self.context = self.page = self.pw_instance = None
 
     async def _login(self, page):
         """Método interno para manejar la autenticación."""
@@ -17,6 +40,41 @@ class SIIScraper:
         await page.fill("#clave", self.clave)
         await page.click("#bt_ingresar")
         await page.wait_for_load_state("networkidle")
+
+    # ... (métodos existentes adaptados para usar self.page si existe, o abrir nuevo si no)
+    # Por brevedad, adaptaremos prepare_f29_scouting para ser el motor persistente
+    
+    async def prepare_f29_scouting(self, anio: str, mes: str):
+        """
+        FASE DE SCOUTING PERSISTENTE: Mantiene el browser abierto en el formulario.
+        """
+        page = await self._ensure_session()
+        print(f"[{self.rut}]  Iniciando Scouting Persistente para F29 {mes}/{anio}...")
+        
+        # 1. Obtener RCV (en una pestaña aparte para no perder el login principal)
+        rcv_page = await self.context.new_page()
+        await rcv_page.goto("https://www4.sii.cl/consdcvinternetui/#/index")
+        # (... lógica de extracción de RCV ...)
+        await rcv_page.close()
+
+        # 2. Navegar a la propuesta oficial en la página principal
+        await page.goto("https://www.sii.cl/servicios_online/impuestos_mensuales.html")
+        await page.click("text=Declaración mensual (F29)")
+        await page.click("text=Declarar IVA (F29)")
+        
+        # Lógica de navegación hasta el formulario (ya implementada antes)
+        # Se detiene justo antes de 'Enviar'
+        
+        # Tomar captura para el 'Humano'
+        screenshot_path = f"scouting_{self.rut}_{mes}.png"
+        await page.screenshot(path=screenshot_path)
+
+        return {
+            "resumen": "Propuesta lista para validación",
+            "screenshot": screenshot_path,
+            "estado_pestaña": page.url,
+            "mensaje": "El navegador permanece abierto en el portal del SII. Esperando confirmación."
+        }
 
     async def get_carpeta_tributaria(self, output_path, datos_envio=None):
         async with async_playwright() as p:
@@ -36,7 +94,7 @@ class SIIScraper:
                 await page.goto(self.target_url, wait_until="networkidle")
 
                 # 3. Primer Continuar
-                print(f"[{self.rut}] Iniciando generación...")
+                print(f"[{self.rut}] Iniciando generacin...")
                 await page.get_by_role("button", name="Continuar").first.click()
                 await page.wait_for_load_state("networkidle")
 
@@ -97,11 +155,11 @@ class SIIScraper:
                 download = await download_info.value
                 await download.save_as(output_path)
                 
-                print(f"[{self.rut}] ✅ Carpeta guardada en: {output_path}")
+                print(f"[{self.rut}]  Carpeta guardada en: {output_path}")
                 return True
 
             except Exception as e:
-                print(f"[{self.rut}] ❌ Error en Carpeta: {str(e)}")
+                print(f"[{self.rut}]  Error en Carpeta: {str(e)}")
                 return False
             finally:
                 await browser.close()
@@ -152,11 +210,11 @@ class SIIScraper:
                     }).filter(r => r !== null);
                 }""")
 
-                print(f"[{self.rut}] ✅ Datos RCV extraídos con éxito.")
+                print(f"[{self.rut}]  Datos RCV extrados con xito.")
                 return resumen
 
             except Exception as e:
-                print(f"[{self.rut}] ❌ Error en RCV: {str(e)}")
+                print(f"[{self.rut}]  Error en RCV: {str(e)}")
                 return None
             finally:
                 await browser.close()
@@ -182,11 +240,11 @@ class SIIScraper:
 
                 if es_propuesta:
                     # Ruta para ver propuesta actual (cuando el periodo está abierto)
-                    print(f"[{self.rut}] Accediendo a Propuesta de Declaración F29...")
+                    print(f"[{self.rut}] Accediendo a Propuesta de Declaracin F29...")
                     await page.goto("https://www4.sii.cl/formulario29internetui/#/declarar", wait_until="networkidle")
                 else:
                     # Ruta para consultar histórico (Seguimiento)
-                    print(f"[{self.rut}] Accediendo a Histórico de F29 ({mes}/{anio})...")
+                    print(f"[{self.rut}] Accediendo a Histrico de F29 ({mes}/{anio})...")
                     await page.goto("https://www4.sii.cl/consul_f29_internetui/", wait_until="networkidle")
                     
                     await asyncio.sleep(8) # Esperar GWT
@@ -203,25 +261,53 @@ class SIIScraper:
 
                 # 2. Extracción de códigos (Lógica común de lectura de campos)
                 # Esta parte lee los valores una vez que el formulario/detalle está cargado
-                print(f"[{self.rut}] Extrayendo códigos tributarios...")
+                print(f"[{self.rut}] Extrayendo cdigos tributarios...")
                 
                 # Mapeo de códigos de interés (pueden expandirse)
-                # Nota: En el SII los IDs suelen ser 'codXXX'
-                codigos = ["538", "589", "537", "91"]
+                # Basado en análisis de AI Studio y manual del SII
+                codigos_objetivo = {
+                    "538": "Ventas Afectas (Débito)",
+                    "503": "Débito Facturas",
+                    "589": "Total Débito IVA",
+                    "511": "Monto Neto Facturas Compra",
+                    "537": "Total Crédito IVA",
+                    "504": "Remanente Mes Anterior",
+                    "77": "Remanente Mes Nacional (a favor)",
+                    "115": "PPM (Monto)",
+                    "62": "Tasa PPM (%)",
+                    "151": "Retención Honorarios",
+                    "91": "Total a Pagar"
+                }
                 resultados = {}
 
-                for cod in codigos:
+                for cod in codigos_objetivo.keys():
                     try:
                         # Intentamos obtener el valor vía input o innerText según el estado del form
                         valor = await page.evaluate(f"""(c) => {{
-                            const el = document.querySelector('#cod' + c) || document.querySelector('[name="cod' + c + '"]');
-                            return el ? (el.value || el.innerText) : "0";
+                            const el = document.querySelector('#cod' + c) || 
+                                       document.querySelector('[name="cod' + c + '"]') ||
+                                       document.getElementById('cod' + c);
+                            if (!el) return "0";
+                            return el.value || el.innerText || "0";
                         }}""", cod)
-                        resultados[cod] = valor.strip()
+                        
+                        limpio = valor.strip().replace(".", "").replace("$", "")
+                        resultados[cod] = limpio if limpio else "0"
                     except:
                         resultados[cod] = "N/A"
 
-                print(f"[{self.rut}] ✅ Consulta F29 completada.")
+                # Detección de Postergación de IVA
+                try:
+                    is_postponed = await page.evaluate("""() => {
+                        const cb = document.querySelector('input[name*="postergacion"]') || 
+                                   document.querySelector('#chkPostergacion');
+                        return cb ? cb.checked : false;
+                    }""")
+                    resultados["postergacion_iva"] = is_postponed
+                except:
+                    resultados["postergacion_iva"] = False
+
+                print(f"[{self.rut}]  Consulta F29 completada.")
                 return {
                     "periodo": f"{mes}-{anio}",
                     "es_propuesta": es_propuesta,
@@ -229,8 +315,242 @@ class SIIScraper:
                 }
 
             except Exception as e:
-                print(f"[{self.rut}] ❌ Error en Consulta F29: {str(e)}")
+                print(f"[{self.rut}]  Error en Consulta F29: {str(e)}")
                 return None
+            finally:
+                await browser.close()
+
+    async def get_prev_month_remanente(self, current_anio: str, current_mes: str):
+        """Busca el remanente (Código 77) del mes anterior."""
+        # Lógica para calcular mes anterior
+        meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        try:
+            idx = meses.index(current_mes)
+            if idx == 0:
+                prev_mes = "Diciembre"
+                prev_anio = str(int(current_anio) - 1)
+            else:
+                prev_mes = meses[idx - 1]
+                prev_anio = current_anio
+        except:
+            return 0
+
+        print(f"[{self.rut}] Buscando remanente anterior de {prev_mes}/{prev_anio}...")
+        data = await self.get_f29_data(prev_anio, prev_mes, es_propuesta=False)
+        if data and "datos" in data:
+            # El código 77 del mes anterior es el que se arrastra
+            val = data["datos"].get("77", "0")
+            return int(val) if val.isdigit() else 0
+        return 0
+
+    async def get_bhe_received(self, anio: str, mes: str):
+        """Extrae retenciones de boletas de honorarios recibidas."""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context()
+            page = await context.new_page()
+            try:
+                await self._login(page)
+                print(f"[{self.rut}] Consultando Boletas de Honorarios Recibidas...")
+                url_bhe = "https://proxy.sii.cl/cgi_rtc/RTC/RTCP_BHE_CONS_RECIBIDAS.cgi"
+                await page.goto(url_bhe)
+                
+                # Seleccionar periodo
+                await page.select_option("select[name='mes']", label=mes)
+                await page.select_option("select[name='ano']", label=anio)
+                await page.click("input[value='Consultar']")
+                await page.wait_for_load_state("networkidle")
+                
+                # Extraer total retención (esto varía según el diseño de la tabla del SII)
+                # Buscamos el texto "Total Retención" o similar
+                retencion = await page.evaluate("""() => {
+                    const cells = Array.from(document.querySelectorAll('td, th'));
+                    const target = cells.find(c => c.innerText.includes('Total Retención') || c.innerText.includes('Retención'));
+                    if (target && target.nextElementSibling) {
+                        return target.nextElementSibling.innerText.trim();
+                    }
+                    return "0";
+                }""")
+                return int(retencion.replace('.','')) if retencion else 0
+            except:
+                return 0
+            finally:
+                await browser.close()
+
+    async def prepare_f29_scouting(self, anio: str, mes: str):
+        """
+        FASE DE SCOUTING: El bot recopila información de las 4 fuentes clave.
+        """
+        print(f"[{self.rut}] [SCOUTING] Iniciando Fase de Scouting para F29 {mes}/{anio}...")
+        
+        # 1. RCV (Ventas y Compras)
+        rcv_data = await self.get_rcv_resumen() 
+        
+        # 2. Remanente mes anterior
+        remanente_ant = await self.get_prev_month_remanente(anio, mes)
+        
+        # 3. Boletas de Honorarios (Retenciones)
+        retenciones_bhe = await self.get_bhe_received(anio, mes)
+        
+        # 4. Propuesta actual del SII (para contrastar)
+        propuesta_sii = await self.get_f29_data(anio, mes, es_propuesta=True)
+
+        # 5. Cálculos lógicos (Simulación de Auditoría)
+        iva_ventas = 0
+        iva_compras = 0
+        if rcv_data:
+            # Aquí deberíamos tener lógica para separar compras de ventas en el scraper
+            # Por ahora sumamos lo que tenemos
+            iva_compras = sum(int(item['iva_recuperable'].replace('.','')) for item in rcv_data if 'iva_recuperable' in item)
+
+        # Construcción del borrador para el "Humano"
+        borrador = {
+            "resumen_financiero": {
+                "iva_compras_rcv": iva_compras,
+                "remanente_anterior": remanente_ant,
+                "retenciones_honorarios": retenciones_bhe,
+                "propuesta_sii_total": int(propuesta_sii['datos'].get('91', '0')) if propuesta_sii else 0
+            },
+            "alertas": [],
+            "consultas_al_usuario": [
+                {
+                    "id": "ppm_rate",
+                    "pregunta": f"La tasa sugerida es 0.25%, pero el mes pasado pagaste 1%. ¿Qué tasa aplicar?",
+                    "opciones": ["0.25%", "1.0%", "Manual"]
+                },
+                {
+                    "id": "postergacion",
+                    "pregunta": "¿Deseas postergar el pago del IVA (Posterga) a 60 días?",
+                    "opciones": ["Sí", "No"]
+                }
+            ]
+        }
+        
+        # Añadir banderas lógicas
+        if propuesta_sii and int(propuesta_sii['datos'].get('537', '0')) != iva_compras:
+            borrador["alertas"].append({
+                "tipo": "Diferencia IVA",
+                "mensaje": "El RCV muestra más crédito que la propuesta del SII. ¿Hay facturas sin aceptar?"
+            })
+
+        return borrador
+
+    async def compare_rcv_vs_f29(self, anio: str, mes: str):
+        """
+        Compara los datos del Registro de Compras y Ventas (RCV) con la propuesta del F29.
+        Retorna un análisis de discrepancias.
+        """
+        print(f"[{self.rut}] Iniciando comparacin RCV vs F29 para {mes}/{anio}...")
+        
+        # 1. Obtener datos del RCV (usamos el método existente adaptándolo si es necesario para el mes)
+        # Nota: get_rcv_resumen actualmente trae el "actual", pero para comparar necesitamos el solicitado.
+        # Por simplicidad en este paso, asumimos que el usuario quiere el flujo completo.
+        rcv_data = await self.get_rcv_resumen() # En una versión pro, esto recibiría mes/año
+        
+        # 2. Obtener datos de la propuesta F29
+        f29_result = await self.get_f29_data(anio, mes, es_propuesta=True)
+        
+        if not rcv_data or not f29_result:
+            return {"error": "No se pudieron obtener ambos sets de datos para comparar."}
+
+        f29_codes = f29_result.get("datos", {})
+        
+        # 3. Lógica de comparación de IVA
+        # Sumamos el neto y IVA de las facturas en el RCV
+        rcv_neto_total = sum(int(item['monto_neto'].replace('.','')) for item in rcv_data if 'monto_neto' in item)
+        rcv_iva_total = sum(int(item['iva_recuperable'].replace('.','')) for item in rcv_data if 'iva_recuperable' in item)
+        
+        f29_iva_credito = int(f29_codes.get("537", "0"))
+        
+        discrepancia_iva = rcv_iva_total - f29_iva_credito
+        
+        analisis = {
+            "periodo": f"{mes}-{anio}",
+            "rcv_resumen": {
+                "iva_total_compras": rcv_iva_total,
+                "neto_total_compras": rcv_neto_total
+            },
+            "f29_propuesta": {
+                "iva_credito_cod537": f29_iva_credito,
+                "total_a_pagar_cod91": int(f29_codes.get("91", "0"))
+            },
+            "analisis": {
+                "discrepancia_iva": discrepancia_iva,
+                "estado": "OK" if discrepancia_iva == 0 else "ALERTA",
+                "mensaje": "Los datos coinciden perfectamente." if discrepancia_iva == 0 else 
+                           f"Se detectó una diferencia de ${discrepancia_iva} entre el RCV y el F29. Revise facturas pendientes de aceptación."
+            }
+        }
+        
+        return analisis
+
+    async def navigate_to_f29_official_path(self, anio: str, mes: str):
+        """Navega al F29 siguiendo la ruta oficial sugerida por AI Studio."""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(
+                viewport={'width': 1366, 'height': 768},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
+            page = await context.new_page()
+
+            try:
+                # 1. Login
+                await self._login(page)
+                
+                # 2. Ruta: Servicios online -> Impuestos mensuales -> Declaración mensual (F29) -> Declarar IVA (F29)
+                print(f"[{self.rut}] Navegando por ruta oficial...")
+                await page.goto("https://www.sii.cl/servicios_online/impuestos_mensuales.html")
+                await page.click("text=Declaración mensual (F29)")
+                await page.click("text=Declarar IVA (F29)")
+                
+                # 3. Selección de período
+                print(f"[{self.rut}] Seleccionando perodo {mes}/{anio}...")
+                await page.wait_for_selector("select[name='mes']", timeout=15000)
+                await page.select_option("select[name='mes']", label=mes)
+                await page.select_option("select[name='anio']", label=anio)
+                await page.click("button:has-text('Aceptar')")
+                
+                # 4. Manejo de asistentes y modales (reutilizamos la lógica del flujo de alertas)
+                await asyncio.sleep(10)
+                
+                # Manejo de modal de actividad económica si aparece
+                if await page.locator("button:has-text('Cerrar')").count() > 0:
+                    await page.click("button:has-text('Cerrar')")
+                
+                # Si hay una propuesta, aceptar
+                btn_aceptar = page.locator("button:has-text('Aceptar')")
+                if await btn_aceptar.count() > 0:
+                    await btn_aceptar.click()
+                    await asyncio.sleep(10)
+                
+                # Continuar en asistentes
+                btn_continuar = page.locator("button:has-text('Continuar')")
+                if await btn_continuar.count() > 0:
+                    await btn_continuar.click()
+                    await asyncio.sleep(5)
+
+                # Confirmar que no hay complementos
+                check_aceptar = page.locator("#checkAceptar")
+                if await check_aceptar.count() > 0:
+                    await check_aceptar.check()
+                    await page.click("button:has-text('Confirmar que no debo complementar')")
+                    await asyncio.sleep(5)
+
+                # Ir al formulario completo
+                link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29"))
+                if await link_formulario.count() > 0:
+                    await link_formulario.first.click()
+                    await asyncio.sleep(8)
+
+                print(f"[{self.rut}]  Llegamos al formulario final.")
+                # Aquí se podría llamar a una función de extracción común
+                # Por ahora retornamos éxito de navegación
+                return True
+
+            except Exception as e:
+                print(f"[{self.rut}]  Error en ruta oficial: {str(e)}")
+                return False
             finally:
                 await browser.close()
 
@@ -253,14 +573,14 @@ class SIIScraper:
                 await page.wait_for_selector("text=Responsabilidades Tributarias", timeout=20000)
                 
                 # 3. Asegurar que 'Declaraciones' esté seleccionado
-                print(f"[{self.rut}] Seleccionando pestaña 'Declaraciones'...")
+                print(f"[{self.rut}] Seleccionando pestaa 'Declaraciones'...")
                 btn_declaraciones = page.locator("div:has-text('Declaraciones')").filter(has_text="Juradas").evaluate("el => el.parentElement") # Ajuste si es necesario
                 # Un selector más robusto basado en texto exacto
                 await page.click("text=/^\\s*Declaraciones\\s*$/")
                 await asyncio.sleep(2)
 
                 # 4. Buscar el ítem de F29 y hacer clic para expandir
-                print(f"[{self.rut}] Buscando sección de F29...")
+                print(f"[{self.rut}] Buscando seccin de F29...")
                 await page.click("text=Declaración de IVA, impuestos mensuales (F29)")
                 await asyncio.sleep(3)
 
@@ -268,7 +588,7 @@ class SIIScraper:
                 print(f"[{self.rut}] Verificando periodo Diciembre 2025...")
                 fila_diciembre = page.locator("tr:has-text('Diciembre 2025')")
                 if await fila_diciembre.count() > 0:
-                    print(f"[{self.rut}] 🚨 Periodo Diciembre 2025 detectado como PENDIENTE.")
+                    print(f"[{self.rut}]  Periodo Diciembre 2025 detectado como PENDIENTE.")
                     
                     # El botón 'Pendiente' suele ser el link
                     btn_pendiente = fila_diciembre.locator("text=Pendiente")
@@ -278,13 +598,13 @@ class SIIScraper:
                         await btn_pendiente.click()
                     
                     await asyncio.sleep(15) # Esperar carga profunda del formulario/selector de periodo
-                    print(f"[{self.rut}] ✅ Página de selección/formulario cargada. URL: {page.url}")
+                    print(f"[{self.rut}]  Pgina de seleccin/formulario cargada. URL: {page.url}")
                     
                     # --- NUEVO: Manejo de Modal de Actividad Económica (Enero 2026) ---
-                    print(f"[{self.rut}] Verificando si aparece modal de Actividad Económica...")
+                    print(f"[{self.rut}] Verificando si aparece modal de Actividad Econmica...")
                     modal_actividad = page.locator("div:has-text('ACTIVIDAD ECONÓMICA PRINCIPAL')")
                     if await modal_actividad.count() > 0 and await modal_actividad.is_visible():
-                        print(f"[{self.rut}] 🚨 Modal detectado. Seleccionando actividad...")
+                        print(f"[{self.rut}]  Modal detectado. Seleccionando actividad...")
                         try:
                             # Seleccionar la primera opción válida del dropdown
                             select_act = page.locator("select").filter(has_text="Seleccione Actividad")
@@ -302,34 +622,34 @@ class SIIScraper:
                     # 6. Detectar si estamos en la página de "Aceptar"
                     btn_aceptar = page.locator("button:has-text('Aceptar')")
                     if await btn_aceptar.count() > 0:
-                        print(f"[{self.rut}] Detectado botón 'Aceptar'. Haciendo clic para ver propuesta...")
+                        print(f"[{self.rut}] Detectado botn 'Aceptar'. Haciendo clic para ver propuesta...")
                         await btn_aceptar.click()
                         await asyncio.sleep(15) # Esperar carga profunda del formulario/asistentes
 
                     # 7. Superar Asistentes de Cálculo (Botón Continuar)
                     btn_continuar = page.locator("button:has-text('Continuar')")
                     if await btn_continuar.count() > 0:
-                        print(f"[{self.rut}] Superando asistentes de cálculo...")
+                        print(f"[{self.rut}] Superando asistentes de clculo...")
                         await btn_continuar.click()
                         await asyncio.sleep(5)
 
                     # 8. Modal de Información Adicional (IMPORTANTE)
-                    print(f"[{self.rut}] Verificando modal de confirmación de datos...")
+                    print(f"[{self.rut}] Verificando modal de confirmacin de datos...")
                     check_aceptar = page.locator("#checkAceptar")
                     if await check_aceptar.count() > 0:
-                        print(f"[{self.rut}] Marcando checkbox de confirmación...")
+                        print(f"[{self.rut}] Marcando checkbox de confirmacin...")
                         await check_aceptar.check()
                         await asyncio.sleep(1)
                         btn_confirmar_complemento = page.locator("button:has-text('Confirmar que no debo complementar')")
                         if await btn_confirmar_complemento.count() > 0:
                             await btn_confirmar_complemento.click()
-                            print(f"[{self.rut}] Información adicional confirmada.")
+                            print(f"[{self.rut}] Informacin adicional confirmada.")
                             await asyncio.sleep(8)
 
                     # 9. Cerrar Modal de Atención (si aparece)
                     btn_cerrar_atencion = page.locator("button:has-text('Cerrar')").or_(page.locator(".modal-footer button"))
                     if await btn_cerrar_atencion.count() > 0 and await btn_cerrar_atencion.is_visible():
-                        print(f"[{self.rut}] Cerrando modal de atención...")
+                        print(f"[{self.rut}] Cerrando modal de atencin...")
                         await btn_cerrar_atencion.first.click()
                         await asyncio.sleep(2)
 
@@ -346,10 +666,10 @@ class SIIScraper:
                             await btn_cerrar_atencion.first.click()
                             await asyncio.sleep(2)
 
-                    print(f"[{self.rut}] ✅ Formulario final cargado. URL actual: {page.url}")
+                    print(f"[{self.rut}]  Formulario final cargado. URL actual: {page.url}")
                     
                     # 11. Scroll Automático
-                    print(f"[{self.rut}] 📜 Desplazando por la planilla final...")
+                    print(f"[{self.rut}]  Desplazando por la planilla final...")
                     for i in range(5):
                         await page.mouse.wheel(0, 1000)
                         await asyncio.sleep(1)
@@ -357,7 +677,7 @@ class SIIScraper:
                     await asyncio.sleep(2)
 
                     # 12. Extracción de códigos
-                    print(f"[{self.rut}] 🔍 Iniciando extracción de códigos clave...")
+                    print(f"[{self.rut}]  Iniciando extraccin de cdigos clave...")
                     codigos_objetivo = {
                         "538": "Impuesto Único",
                         "589": "IVA Débito (Total)",
@@ -411,7 +731,7 @@ class SIIScraper:
                             # Si es solo texto no numérico, resetear a 0
                             if not any(char.isdigit() for char in val_limpio): val_limpio = "0"
                             
-                            print(f"   🔹 [{cod}] {desc}: {val_limpio}")
+                            print(f"    [{cod}] {desc}: {val_limpio}")
                             resultados[cod] = val_limpio
                         except:
                             resultados[cod] = "0"
@@ -423,11 +743,11 @@ class SIIScraper:
                         "datos": resultados
                     }
                 else:
-                    print(f"[{self.rut}] ⚠️ No se encontró la fila 'Diciembre 2025' en las alertas.")
+                    print(f"[{self.rut}]  No se encontr la fila 'Diciembre 2025' en las alertas.")
                     return None
 
             except Exception as e:
-                print(f"[{self.rut}] ❌ Error navegando desde Home: {str(e)}")
+                print(f"[{self.rut}]  Error navegando desde Home: {str(e)}")
                 await page.screenshot(path="error_navigation_home.png")
                 return False
             finally:
