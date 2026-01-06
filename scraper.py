@@ -3,14 +3,26 @@ from playwright.async_api import async_playwright
 import os
 
 class SIIScraper:
-    def __init__(self, rut, clave):
+    def __init__(self, rut, clave, log_callback=None):
         self.rut = rut
         self.clave = clave
+        self.log_callback = log_callback
         self.browser = None
         self.context = None
         self.page = None
         self.pw_instance = None
         self.login_url = "https://zeusr.sii.cl/AUT2000/InicioAutenticacion/IngresoRutClave.html?https://misiir.sii.cl/cgi_misii/siihome.cgi"
+
+    async def log(self, message: str, type: str = "info"):
+        """Envía logs al callback si existe, y también imprime en consola."""
+        formatted_msg = f"[{self.rut}] {message}"
+        print(formatted_msg)
+        if self.log_callback:
+            # Si el callback es asíncrono, lo esperamos
+            if asyncio.iscoroutinefunction(self.log_callback):
+                await self.log_callback(formatted_msg, type)
+            else:
+                self.log_callback(formatted_msg, type)
 
     async def _ensure_session(self):
         """Asegura que haya una sesión de navegador activa."""
@@ -569,42 +581,42 @@ class SIIScraper:
                 await self._login(page)
                 
                 # 2. Esperar a la Home
-                print(f"[{self.rut}] Esperando panel de alertas...")
+                await self.log("Esperando panel de alertas...")
                 await page.wait_for_selector("text=Responsabilidades Tributarias", timeout=20000)
                 
                 # 3. Asegurar que 'Declaraciones' esté seleccionado
-                print(f"[{self.rut}] Seleccionando pestaa 'Declaraciones'...")
+                await self.log("Seleccionando pestaña 'Declaraciones'...")
                 btn_declaraciones = page.locator("div:has-text('Declaraciones')").filter(has_text="Juradas").evaluate("el => el.parentElement") # Ajuste si es necesario
                 # Un selector más robusto basado en texto exacto
                 await page.click("text=/^\\s*Declaraciones\\s*$/")
                 await asyncio.sleep(2)
 
                 # 4. Buscar el ítem de F29 y hacer clic para expandir
-                print(f"[{self.rut}] Buscando seccin de F29...")
+                await self.log("Buscando sección de F29...")
                 await page.click("text=Declaración de IVA, impuestos mensuales (F29)")
                 await asyncio.sleep(3)
 
                 # 5. Buscar la fila de 'Diciembre 2025' y el estado 'Pendiente'
-                print(f"[{self.rut}] Verificando periodo Diciembre 2025...")
+                await self.log("Verificando periodo Diciembre 2025...")
                 fila_diciembre = page.locator("tr:has-text('Diciembre 2025')")
                 if await fila_diciembre.count() > 0:
-                    print(f"[{self.rut}]  Periodo Diciembre 2025 detectado como PENDIENTE.")
+                    await self.log("Periodo Diciembre 2025 detectado como PENDIENTE. ✅")
                     
                     # El botón 'Pendiente' suele ser el link
                     btn_pendiente = fila_diciembre.locator("text=Pendiente")
                     
-                    print(f"[{self.rut}] Haciendo clic en 'Pendiente' para entrar al formulario...")
+                    await self.log("Haciendo clic en 'Pendiente' para entrar al formulario...")
                     async with page.expect_navigation():
                         await btn_pendiente.click()
                     
                     await asyncio.sleep(15) # Esperar carga profunda del formulario/selector de periodo
-                    print(f"[{self.rut}]  Pgina de seleccin/formulario cargada. URL: {page.url}")
+                    await self.log(f"Página de selección/formulario cargada. URL: {page.url}")
                     
                     # --- NUEVO: Manejo de Modal de Actividad Económica (Enero 2026) ---
-                    print(f"[{self.rut}] Verificando si aparece modal de Actividad Econmica...")
+                    await self.log("Verificando si aparece modal de Actividad Económica...")
                     modal_actividad = page.locator("div:has-text('ACTIVIDAD ECONÓMICA PRINCIPAL')")
                     if await modal_actividad.count() > 0 and await modal_actividad.is_visible():
-                        print(f"[{self.rut}]  Modal detectado. Seleccionando actividad...")
+                        await self.log("Modal detectado. Seleccionando actividad...")
                         try:
                             # Seleccionar la primera opción válida del dropdown
                             select_act = page.locator("select").filter(has_text="Seleccione Actividad")
@@ -612,52 +624,52 @@ class SIIScraper:
                                 await select_act.select_option(index=1)
                                 await asyncio.sleep(1)
                                 await page.click("button:has-text('Confirmar')")
-                                print(f"[{self.rut}] Actividad confirmada.")
+                                await self.log("Actividad confirmada.")
                                 await asyncio.sleep(5)
                         except Exception as e:
-                            print(f"[{self.rut}] No se pudo completar el modal: {e}")
+                            await self.log(f"No se pudo completar el modal: {e}", "error")
                             # Intentar simplemente cerrar si existe el botón
                             await page.click("button:has-text('Cerrar')")
 
                     # 6. Detectar si estamos en la página de "Aceptar"
                     btn_aceptar = page.locator("button:has-text('Aceptar')")
                     if await btn_aceptar.count() > 0:
-                        print(f"[{self.rut}] Detectado botn 'Aceptar'. Haciendo clic para ver propuesta...")
+                        await self.log("Detectado botón 'Aceptar'. Haciendo clic para ver propuesta...")
                         await btn_aceptar.click()
                         await asyncio.sleep(15) # Esperar carga profunda del formulario/asistentes
 
                     # 7. Superar Asistentes de Cálculo (Botón Continuar)
                     btn_continuar = page.locator("button:has-text('Continuar')")
                     if await btn_continuar.count() > 0:
-                        print(f"[{self.rut}] Superando asistentes de clculo...")
+                        await self.log("Superando asistentes de cálculo...")
                         await btn_continuar.click()
                         await asyncio.sleep(5)
 
                     # 8. Modal de Información Adicional (IMPORTANTE)
-                    print(f"[{self.rut}] Verificando modal de confirmacin de datos...")
+                    await self.log("Verificando modal de confirmación de datos...")
                     check_aceptar = page.locator("#checkAceptar")
                     if await check_aceptar.count() > 0:
-                        print(f"[{self.rut}] Marcando checkbox de confirmacin...")
+                        await self.log("Marcando checkbox de confirmación...")
                         await check_aceptar.check()
                         await asyncio.sleep(1)
                         btn_confirmar_complemento = page.locator("button:has-text('Confirmar que no debo complementar')")
                         if await btn_confirmar_complemento.count() > 0:
                             await btn_confirmar_complemento.click()
-                            print(f"[{self.rut}] Informacin adicional confirmada.")
+                            await self.log("Información adicional confirmada.")
                             await asyncio.sleep(8)
 
                     # 9. Cerrar Modal de Atención (si aparece)
                     btn_cerrar_atencion = page.locator("button:has-text('Cerrar')").or_(page.locator(".modal-footer button"))
                     if await btn_cerrar_atencion.count() > 0 and await btn_cerrar_atencion.is_visible():
-                        print(f"[{self.rut}] Cerrando modal de atencin...")
+                        await self.log("Cerrando modal de atención...")
                         await btn_cerrar_atencion.first.click()
                         await asyncio.sleep(2)
 
                     # 10. Ir al Formulario Completo (donde están todos los códigos con valores reales)
-                    print(f"[{self.rut}] Buscando acceso al Formulario Completo...")
+                    await self.log("Buscando acceso al Formulario Completo...")
                     link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29"))
                     if await link_formulario.count() > 0:
-                        print(f"[{self.rut}] Accediendo a la vista de Formulario Completo...")
+                        await self.log("Accediendo a la vista de Formulario Completo...")
                         await link_formulario.first.click()
                         await asyncio.sleep(10)
                         
@@ -666,10 +678,10 @@ class SIIScraper:
                             await btn_cerrar_atencion.first.click()
                             await asyncio.sleep(2)
 
-                    print(f"[{self.rut}]  Formulario final cargado. URL actual: {page.url}")
+                    await self.log(f"Formulario final cargado. URL: {page.url}")
                     
                     # 11. Scroll Automático
-                    print(f"[{self.rut}]  Desplazando por la planilla final...")
+                    await self.log("Desplazando por la planilla final...")
                     for i in range(5):
                         await page.mouse.wheel(0, 1000)
                         await asyncio.sleep(1)
@@ -677,7 +689,7 @@ class SIIScraper:
                     await asyncio.sleep(2)
 
                     # 12. Extracción de códigos
-                    print(f"[{self.rut}]  Iniciando extraccin de cdigos clave...")
+                    await self.log("Iniciando extracción de códigos clave...")
                     codigos_objetivo = {
                         "538": "Impuesto Único",
                         "589": "IVA Débito (Total)",

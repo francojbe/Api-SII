@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Header
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Header, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 import os
 import uuid
 import asyncio
+import json
 from scraper import SIIScraper
 from scraper_anual import SIIScraperAnual
 from auditor_ia import auditor
@@ -24,6 +25,95 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- WEBSOCKET CONNECTION MANAGER ---
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: dict, websocket: WebSocket):
+        await websocket.send_json(message)
+
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections:
+            await connection.send_json(message)
+
+manager = ConnectionManager()
+
+# --- LIVE AGENT WEBSOCKET ENDPOINT ---
+@app.websocket("/ws/live-agent")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    scraper_instance = None
+    try:
+        while True:
+            data = await websocket.receive_text()
+            command_data = json.loads(data)
+            
+            if command_data.get("command") == "start_live_scout":
+                rut = command_data.get("rut")
+                clave = command_data.get("clave")
+                
+                await manager.send_personal_message({
+                    "type": "log", 
+                    "text": f"Iniciando agente para RUT: {rut}",
+                    "log_type": "info"
+                }, websocket)
+
+                # Definir callback para el scraper
+                async def scraper_logger(msg, log_type="info"):
+                    await manager.send_personal_message({
+                        "type": "log",
+                        "text": msg,
+                        "log_type": log_type
+                    }, websocket)
+
+                # Instanciar y ejecutar
+                scraper_instance = SIIScraper(rut, clave, log_callback=scraper_logger)
+                
+                # Ejecutar en background para no bloquear el loop de lectura de WS
+                # Usamos asyncio.create_task para que corra "en paralelo"
+                asyncio.create_task(run_live_scout(scraper_instance, websocket))
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        if scraper_instance:
+             await scraper_instance.close_session()
+
+async def run_live_scout(scraper, websocket):
+    try:
+        # Ejecutamos la navegación compleja
+        result = await scraper.navigate_to_f29_from_home()
+        
+        if result:
+             await manager.send_personal_message({
+                "type": "log",
+                "text": "✅ Proceso finalizado con éxito.",
+                "log_type": "success"
+            }, websocket)
+             # Aquí podríamos enviar los datos finales si los tuviéramos
+        else:
+             await manager.send_personal_message({
+                "type": "log",
+                "text": "❌ El proceso finalizó sin resultados o con error.",
+                "log_type": "error"
+            }, websocket)
+            
+    except Exception as e:
+        await manager.send_personal_message({
+            "type": "log",
+            "text": f"💥 Error crítico en agente: {str(e)}",
+            "log_type": "error"
+        }, websocket)
+    finally:
+        await scraper.close_session()
 
 # Configuración de Seguridad Simple
 API_KEY_CREDENTIAL = os.getenv("API_KEY_SCII", "mi_llave_secreta_123")
