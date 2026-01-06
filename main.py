@@ -93,6 +93,28 @@ async def run_live_scout(scraper, websocket):
         result = await scraper.navigate_to_f29_from_home()
         
         if result:
+             # GUARDAR CONTEXTO PARA EL CHAT POST-EJECUCIÓN
+             rut_limpio = scraper.rut  # Asegurarnos de tener el RUT
+             
+             # Simulamos un scouting básico si no tenemos datos reales aún
+             # Idealmente navigate_to_f29_from_home debería devolver los datos extraídos
+             fake_scouting_data = {
+                 "resumen": "Navegación en vivo completada exitosamente.",
+                 "estado": "Formulario F29 accedido",
+                 "rut": rut_limpio
+             }
+             
+             sys_prompt = f"""Eres un Auditor Tributario. Acabas de realizar una nevegación EN VIVO para el RUT {rut_limpio}.
+             El proceso fue exitoso y se logró acceder al formulario F29.
+             
+             Ahora el usuario te hará preguntas. Responde basándote en que el acceso fue correcto.
+             """
+             
+             SESSION_CONTEXT[rut_limpio] = {
+                 "scouting_data": fake_scouting_data,
+                 "base_system_prompt": sys_prompt
+             }
+
              await manager.send_personal_message({
                 "type": "log",
                 "text": "✅ Proceso finalizado con éxito.",
