@@ -714,11 +714,16 @@ class SIIScraper:
                     resultados = {k: 0 for k in codigos_objetivo.keys()}
                     
                     # ESPERAR A QUE CARGUE EL FORMULARIO (IMPORTANTE)
+                    await self.log("Esperando carga de datos en formulario...")
+                    # Buscamos 'Débito' con acento o sin acento, o el código 538
                     try:
-                        await page.wait_for_selector("text=Debito", timeout=20000)
-                        await self.log("Formulario detectado visualmente.")
+                        await page.wait_for_selector("text=/D.bito|538|IVA/", timeout=30000)
+                        await self.log("Contenido del formulario detectado.")
                     except:
-                        await self.log("Tiempo de espera agotado buscando texto 'Debito', procediendo con precaución...")
+                        await self.log("⚠️ Tiempo de espera agotado buscando texto clave. El formulario podría estar vacío o lento.")
+                    
+                    # Pequeña espera extra para que los frames terminen de poblarse
+                    await asyncio.sleep(5)
 
                     for cod in codigos_objetivo.keys():
                         await self.log(f"Buscando Código [{cod}]...")
@@ -731,33 +736,39 @@ class SIIScraper:
                                     valor = await frame.evaluate(f"""(c) => {{
                                         const cleanNum = (str) => {{
                                             if (!str) return null;
+                                            // Eliminar todo lo que no sea dígito
                                             const cleaned = str.replace(/[^0-9]/g, '');
                                             return cleaned.length > 0 ? cleaned : null;
                                         }};
 
-                                        // 1. Búsqueda por ID/Name Directo o Parcial
+                                        // 1. Búsqueda por ID/Name Directo
                                         const exact = document.getElementById('valCode' + c) || 
                                                        document.getElementById('code' + c) ||
-                                                       document.querySelector(`input[name*="${{c}}"]`) ||
-                                                       document.querySelector(`[id*="${{c}}"]`);
+                                                       document.querySelector(`input[id*="valCode${{c}}"]`) ||
+                                                       document.querySelector(`input[name*="valCode${{c}}"]`);
                                         if (exact && exact.value && cleanNum(exact.value)) return exact.value;
-                                        if (exact && exact.innerText && cleanNum(exact.innerText)) return exact.innerText;
 
-                                        // 2. Búsqueda por texto [XXX] o (XXX)
-                                        const label = Array.from(document.querySelectorAll('td, label, span, div'))
-                                                           .find(el => el.innerText.includes('[' + c + ']') || el.innerText.includes('(' + c + ')'));
+                                        // 2. Búsqueda por texto del código en cualquier elemento
+                                        // Buscamos elementos que contengan el código rodeado de algo no numérico
+                                        const all = Array.from(document.querySelectorAll('td, label, span, div, b'));
+                                        const target = all.find(el => {{
+                                            const t = el.innerText.trim();
+                                            return t === c || t === '['+c+']' || t === '('+c+')' || t === c+':';
+                                        }});
                                         
-                                        if (label) {{
-                                            const row = label.closest('tr') || label.closest('div.row') || label.parentElement;
+                                        if (target) {{
+                                            // El valor suele estar en la misma fila (tr) o en el siguiente div/td
+                                            const row = target.closest('tr') || target.closest('div.row') || target.parentElement;
                                             if (row) {{
                                                 const input = row.querySelector('input');
                                                 if (input && input.value && cleanNum(input.value)) return input.value;
 
-                                                const texts = Array.from(row.querySelectorAll('td, div, span'))
+                                                // Si no hay input, buscar el texto numérico más probable en la fila
+                                                const cells = Array.from(row.querySelectorAll('td, div, span'))
                                                                   .map(el => el.innerText.trim())
-                                                                  .filter(t => t !== '' && !t.includes(c));
+                                                                  .filter(t => t !== '' && t !== target.innerText.trim());
                                                 
-                                                for (let t of texts.reverse()) {{
+                                                for (let t of cells.reverse()) {{
                                                     if (cleanNum(t)) return t;
                                                 }}
                                             }}
