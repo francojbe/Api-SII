@@ -98,27 +98,33 @@ async def run_live_scout(scraper, websocket):
              
              # Simulamos un scouting básico si no tenemos datos reales aún
              # Idealmente navigate_to_f29_from_home debería devolver los datos extraídos
-             fake_scouting_data = {
+             # Usar datos reales del scraper si devolvió un diccionario
+             scouting_data = result if isinstance(result, dict) else {
                  "resumen": "Navegación en vivo completada exitosamente.",
                  "estado": "Formulario F29 accedido",
-                 "rut": rut_limpio
+                 "rut": rut_limpio,
+                 "datos": {}
              }
              
+             # Prompt enriquecido con los datos extraídos
+             datos_txt = json.dumps(scouting_data.get('datos', {}), indent=2)
              sys_prompt = f"""Eres un Auditor Tributario. Acabas de realizar una nevegación EN VIVO para el RUT {rut_limpio}.
-             El proceso fue exitoso y se logró acceder al formulario F29.
+             Se extrajeron los siguientes datos del formulario F29 (Propuesta):
+             {datos_txt}
              
-             Ahora el usuario te hará preguntas. Responde basándote en que el acceso fue correcto.
+             Usa estos valores para responder al usuario. Si el remanente es alto, coméntalo. Si hay pago, avisa.
              """
              
              SESSION_CONTEXT[rut_limpio] = {
-                 "scouting_data": fake_scouting_data,
+                 "scouting_data": scouting_data,
                  "base_system_prompt": sys_prompt
              }
 
              await manager.send_personal_message({
                 "type": "log",
                 "text": "✅ Proceso finalizado con éxito.",
-                "log_type": "success"
+                "log_type": "success",
+                "payload": scouting_data # Enviamos los datos al front
             }, websocket)
              # Aquí podríamos enviar los datos finales si los tuviéramos
         else:
