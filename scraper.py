@@ -705,48 +705,52 @@ class SIIScraper:
 
                     for cod, desc in codigos_objetivo.items():
                         try:
+                            
+                            # Estrategia mejorada: Esperar a que el input tenga valor (no vacío)
                             valor = await page.evaluate(f"""(c) => {{
-                                // 1. Buscar el elemento que contiene el código exacto
-                                const allElements = Array.from(document.querySelectorAll('td, div, span, b'));
-                                const codeElement = allElements.find(el => el.innerText.trim() === c);
-                                
-                                if (codeElement) {{
-                                    // En el formulario completo del SII, el valor suele estar en la misma fila (tr)
-                                    // o en el siguiente div/td.
-                                    const row = codeElement.closest('tr');
-                                    if (row) {{
-                                        // Buscar cualquier input en la fila
-                                        const input = row.querySelector('input');
-                                        if (input && input.value) return input.value;
-                                        
-                                        // Si no hay input, buscar una celda con números
-                                        const cells = Array.from(row.querySelectorAll('td, div'));
-                                        const valueCell = cells.find(el => /[0-9]/.test(el.innerText) && el.innerText.trim() !== c);
-                                        if (valueCell) return valueCell.innerText;
-                                    }}
-                                    
-                                    // Búsqueda por proximidad si no hay fila clara
-                                    const nextEl = codeElement.nextElementSibling;
-                                    if (nextEl && nextEl.querySelector('input')) return nextEl.querySelector('input').value;
+                                // Estrategia A: ID directo (Formato standard SII)
+                                const possibleIds = ['valCode' + c, 'code' + c, 'cod_' + c, 'frm_code' + c];
+                                for (const id of possibleIds) {{
+                                    const el = document.getElementById(id) || document.querySelector(`input[id$="${{id}}"]`);
+                                    if (el && el.value) return el.value;
                                 }}
                                 
-                                // 2. Intento por ID o Atributo (fallback)
-                                const byId = document.getElementById('cod' + c) || 
-                                             document.querySelector(`input[id*="cod${{c}}"]`) ||
-                                             document.querySelector(`input[name*="cod${{c}}"]`);
-                                if (byId) return byId.value || byId.innerText;
+                                // Estrategia B: Búsqueda semántica (Texto codigo -> Input cercano)
+                                // Buscamos celdas que CONTENGAN el código [538]
+                                const label = Array.from(document.querySelectorAll('td')).find(td => td.innerText.includes('[' + c + ']'));
+                                if (label) {{
+                                    const row = label.closest('tr');
+                                    if (row) {{
+                                        const input = row.querySelector('input');
+                                        if (input) return input.value;
+                                        // Si es texto estatico
+                                        const values = Array.from(row.querySelectorAll('td')).filter(td => /[0-9]/.test(td.innerText));
+                                        if (values.length > 1) return values[values.length - 1].innerText; // Usualmente la ultima col es monto
+                                    }}
+                                }}
                                 
                                 return "0";
                             }}""", cod)
+
+                            # Limpieza y conversión segura
+                            if valor:
+                                val_limpio = valor.strip().replace(".", "").replace("$", "")
+                                # Si viene vacío o guiones, es 0
+                                if not val_limpio or val_limpio == "-" or val_limpio == "NaN": 
+                                    resultados[cod] = 0
+                                else:
+                                    try:
+                                        resultados[cod] = int(val_limpio)
+                                    except:
+                                        resultados[cod] = 0
+                            else:
+                                resultados[cod] = 0
                             
-                            val_limpio = valor.strip().replace(".", "").replace("$", "") if valor else "0"
-                            # Si es solo texto no numérico, resetear a 0
-                            if not any(char.isdigit() for char in val_limpio): val_limpio = "0"
-                            
-                            print(f"    [{cod}] {desc}: {val_limpio}")
-                            resultados[cod] = val_limpio
-                        except:
-                            resultados[cod] = "0"
+                            await self.log(f"    Code [{cod}]: {resultados[cod]}")
+
+                        except Exception as e:
+                            resultados[cod] = 0
+                            await self.log(f"    Code [{cod}] Error lectura: {e}", "error")
 
                     await page.screenshot(path="f29_full_data_extracted.png")
                     return {
