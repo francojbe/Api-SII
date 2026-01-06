@@ -802,10 +802,20 @@ class SIIScraper:
                              await self.log(f"    Code [{cod}]: 0 (No Encontrado)")
 
                     await page.screenshot(path="f29_full_data_extracted.png")
+                    
+                    # Verificación de pago (Código 91)
+                    total_a_pagar = resultados.get("91", 0)
+                    if total_a_pagar > 0:
+                        await self.log(f"⚠️ Atención: Declaración con pago pendiente de ${total_a_pagar}.")
+                    else:
+                        await self.log("✅ Declaración sin pago determinado o en $0.")
+
                     return {
                         "periodo": "Diciembre 2025",
                         "url": page.url,
-                        "datos": resultados
+                        "datos": resultados,
+                        "pago_requerido": total_a_pagar > 0,
+                        "monto_pago": total_a_pagar
                     }
                 else:
                     print(f"[{self.rut}]  No se encontr la fila 'Diciembre 2025' en las alertas.")
@@ -817,3 +827,46 @@ class SIIScraper:
                 return False
             finally:
                 await browser.close()
+    async def submit_f29(self, page, banco=None):
+        """
+        Finaliza el proceso de envío del F29. 
+        Si hay pago, requiere seleccionar un banco.
+        """
+        try:
+            await self.log("Iniciando fase de envío oficial...")
+            
+            # 1. Click en el botón de enviar/aceptar de la planilla
+            btn_enviar = page.locator("button:has-text('Enviar Declaración'), button:has-text('Aceptar')")
+            await btn_enviar.first.click()
+            await asyncio.sleep(5)
+
+            # 2. Manejo de Pago si aplica
+            if banco:
+                await self.log(f"Seleccionando medio de pago: {banco}")
+                # Aquí iría la lógica de selección de banco según el HTML del SII
+                # (Usualmente un dropdown o lista de radios)
+                pass
+
+            # 3. Confirmación Final
+            await self.log("Esperando confirmación de recepción...")
+            await page.wait_for_selector("text=Declaración Recibida", timeout=30000)
+            
+            # 4. Captura de Folio
+            folio = await page.evaluate("""() => {
+                const el = document.querySelector('td:has-text("Número de Folio") + td, b:has-text("Folio") + span');
+                return el ? el.innerText.trim() : "No detectado";
+            }""")
+            
+            fecha = await page.evaluate("() => new Date().toLocaleString()")
+            
+            await self.log(f"✅ ¡Éxito! Folio capturado: {folio}")
+            await page.screenshot(path=f"comprobante_f29_{folio}.png")
+            
+            return {
+                "folio": folio,
+                "fecha": fecha,
+                "screenshot": f"comprobante_f29_{folio}.png"
+            }
+        except Exception as e:
+            await self.log(f"Error en el envío: {e}", "error")
+            return False
