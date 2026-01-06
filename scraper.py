@@ -667,7 +667,7 @@ class SIIScraper:
 
                     # 10. Ir al Formulario Completo (donde están todos los códigos con valores reales)
                     await self.log("Buscando acceso al Formulario Completo...")
-                    link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29"))
+                    link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29")).or_(page.locator("text=Formulario en Pantalla"))
                     if await link_formulario.count() > 0:
                         await self.log("Accediendo a la vista de Formulario Completo...")
                         await link_formulario.first.click()
@@ -701,76 +701,71 @@ class SIIScraper:
                         "91": "Total a Pagar",
                         "62": "PPM Neto"
                     }
-                    resultados = {}
+                    resultados = {k: 0 for k in codigos_objetivo.keys()}
+                    
+                    # ESPERAR A QUE CARGUE EL FORMULARIO (IMPORTANTE)
+                    try:
+                        await page.wait_for_selector("text=Debito", timeout=20000)
+                        await self.log("Formulario detectado visualmente.")
+                    except:
+                        await self.log("Tiempo de espera agotado buscando texto 'Debito', procediendo con precaución...")
 
-                    for cod, desc in codigos_objetivo.items():
-                        try:
-                            
-                            # Estrategia mejorada: Esperar a que el input tenga valor (no vacío)
-                            valor = await page.evaluate(f"""(c) => {{
-                                const cleanNum = (str) => {{
-                                    if (!str) return null;
-                                    const cleaned = str.replace(/[^0-9]/g, '');
-                                    return cleaned.length > 0 ? cleaned : null;
-                                }};
+                    for cod in codigos_objetivo.keys():
+                        await self.log(f"Buscando Código [{cod}]...")
+                        found = False
+                        # Buscamos en todas las páginas abiertas (por si abrió pestaña nueva)
+                        for p in page.context.pages:
+                            if found: break
+                            for frame in p.frames:
+                                try:
+                                    valor = await frame.evaluate(f"""(c) => {{
+                                        const cleanNum = (str) => {{
+                                            if (!str) return null;
+                                            const cleaned = str.replace(/[^0-9]/g, '');
+                                            return cleaned.length > 0 ? cleaned : null;
+                                        }};
 
-                                // 1. Búsqueda por ID Específico (Alta confianza)
-                                // El SII usa 'valCode' + codigo para los inputs modificables
-                                const exactInput = document.getElementById('valCode' + c) || 
-                                                 document.getElementById('code' + c) ||
-                                                 document.querySelector(`input[name="valCode${{c}}"]`);
-                                if (exactInput && exactInput.value) return exactInput.value;
+                                        // 1. Búsqueda por ID/Name Directo o Parcial
+                                        const exact = document.getElementById('valCode' + c) || 
+                                                       document.getElementById('code' + c) ||
+                                                       document.querySelector(`input[name*="${{c}}"]`) ||
+                                                       document.querySelector(`[id*="${{c}}"]`);
+                                        if (exact && exact.value && cleanNum(exact.value)) return exact.value;
+                                        if (exact && exact.innerText && cleanNum(exact.innerText)) return exact.innerText;
 
-                                // 2. Búsqueda Semántica en Tabla (Media confianza)
-                                // Buscamos la celda que tenga el codigo entre corchetes [538]
-                                const labelTd = Array.from(document.querySelectorAll('td, label')).find(el => el.innerText.includes('[' + c + ']'));
-                                
-                                if (labelTd) {{
-                                    const row = labelTd.closest('tr');
-                                    if (row) {{
-                                        // A. Buscar input en la misma fila
-                                        const rowInput = row.querySelector('input');
-                                        if (rowInput && rowInput.value) return rowInput.value;
-
-                                        // B. Buscar celda de valor (texto numérico)
-                                        // Filtramos celdas que NO sean la etiqueta y que parezcan dinero (contienen digitos)
-                                        const cells = Array.from(row.querySelectorAll('td div, td'));
+                                        // 2. Búsqueda por texto [XXX] o (XXX)
+                                        const label = Array.from(document.querySelectorAll('td, label, span, div'))
+                                                           .find(el => el.innerText.includes('[' + c + ']') || el.innerText.includes('(' + c + ')'));
                                         
-                                        // Buscamos de derecha a izquierda (usualmente el monto está al final)
-                                        for (let i = cells.length - 1; i >= 0; i--) {{
-                                            const txt = cells[i].innerText;
-                                            // Ignorar si es el mismo label o si parece texto largo (títulos)
-                                            if (txt.includes('[' + c + ']')) continue;
-                                            if (txt.includes('TOTAL') || txt.includes('titulo')) continue;
-                                            
-                                            // Si limpiando queda un número, es nuestro candidato
-                                            if (cleanNum(txt)) return txt;
+                                        if (label) {{
+                                            const row = label.closest('tr') || label.closest('div.row') || label.parentElement;
+                                            if (row) {{
+                                                const input = row.querySelector('input');
+                                                if (input && input.value && cleanNum(input.value)) return input.value;
+
+                                                const texts = Array.from(row.querySelectorAll('td, div, span'))
+                                                                  .map(el => el.innerText.trim())
+                                                                  .filter(t => t !== '' && !t.includes(c));
+                                                
+                                                for (let t of texts.reverse()) {{
+                                                    if (cleanNum(t)) return t;
+                                                }}
+                                            }}
                                         }}
-                                    }}
-                                }}
-                                
-                                return "0";
-                            }}""", cod)
+                                        return null;
+                                    }}""", cod)
 
-                            # Limpieza y conversión segura
-                            if valor:
-                                val_limpio = valor.strip().replace(".", "").replace("$", "")
-                                # Si viene vacío o guiones, es 0
-                                if not val_limpio or val_limpio == "-" or val_limpio == "NaN": 
-                                    resultados[cod] = 0
-                                else:
-                                    try:
-                                        resultados[cod] = int(val_limpio)
-                                    except:
-                                        resultados[cod] = 0
-                            else:
-                                resultados[cod] = 0
-                            
-                            await self.log(f"    Code [{cod}]: {resultados[cod]}")
-
-                        except Exception as e:
-                            resultados[cod] = 0
-                            await self.log(f"    Code [{cod}] Error lectura: {e}", "error")
+                                    if valor:
+                                        val_limpio = valor.strip().replace(".", "").replace("$", "").replace(",", "")
+                                        if val_limpio.isdigit():
+                                            resultados[cod] = int(val_limpio)
+                                            await self.log(f"    Code [{cod}]: {resultados[cod]} (Encontrado en {frame.url[:40]}...)")
+                                            found = True
+                                            break
+                                except: continue
+                        
+                        if not found:
+                             await self.log(f"    Code [{cod}]: 0 (No Encontrado)")
 
                     await page.screenshot(path="f29_full_data_extracted.png")
                     return {
