@@ -586,9 +586,13 @@ class SIIScraper:
                 
                 # 3. Asegurar que 'Declaraciones' esté seleccionado
                 await self.log("Seleccionando pestaña 'Declaraciones'...")
-                btn_declaraciones = page.locator("div:has-text('Declaraciones')").filter(has_text="Juradas").evaluate("el => el.parentElement") # Ajuste si es necesario
-                # Un selector más robusto basado en texto exacto
-                await page.click("text=/^\\s*Declaraciones\\s*$/")
+                await page.wait_for_load_state("networkidle")
+                # Selector más robusto para la pestaña Declaraciones
+                try:
+                    await page.click("text=/^\\s*Declaraciones\\s*$/", timeout=5000)
+                except:
+                    await self.log("No se pudo hacer clic exacto en 'Declaraciones', intentando alternativa...")
+                    await page.click("div:has-text('Declaraciones')")
                 await asyncio.sleep(2)
 
                 # 4. Buscar el ítem de F29 y hacer clic para expandir
@@ -667,16 +671,22 @@ class SIIScraper:
 
                     # 10. Ir al Formulario Completo (donde están todos los códigos con valores reales)
                     await self.log("Buscando acceso al Formulario Completo...")
+                    # A veces el botón tarda en aparecer o está en un frame
+                    await asyncio.sleep(5)
                     link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29")).or_(page.locator("text=Formulario en Pantalla"))
-                    if await link_formulario.count() > 0:
-                        await self.log("Accediendo a la vista de Formulario Completo...")
-                        await link_formulario.first.click()
-                        await asyncio.sleep(10)
+                    
+                    found_link = False
+                    for _ in range(3): # Re-intentar 3 veces con esperas
+                        if await link_formulario.count() > 0 and await link_formulario.first.is_visible():
+                            await self.log("Accediendo a la vista de Formulario Completo...")
+                            await link_formulario.first.click()
+                            await asyncio.sleep(12)
+                            found_link = True
+                            break
+                        await asyncio.sleep(3)
                         
-                        # Cerrar modal de atención que suele re-aparecer en el form completo
-                        if await btn_cerrar_atencion.count() > 0:
-                            await btn_cerrar_atencion.first.click()
-                            await asyncio.sleep(2)
+                    if not found_link:
+                         await self.log("⚠️ No se encontró el botón para el Formulario Completo. Intentando extracción en vista actual.")
 
                     await self.log(f"Formulario final cargado. URL: {page.url}")
                     
