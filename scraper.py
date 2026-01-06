@@ -713,17 +713,27 @@ class SIIScraper:
                     }
                     resultados = {k: 0 for k in codigos_objetivo.keys()}
                     
-                    # ESPERAR A QUE CARGUE EL FORMULARIO (IMPORTANTE)
-                    await self.log("Esperando carga de datos en formulario...")
-                    # Buscamos 'Débito' con acento o sin acento, o el código 538
-                    try:
-                        await page.wait_for_selector("text=/D.bito|538|IVA/", timeout=30000)
-                        await self.log("Contenido del formulario detectado.")
-                    except:
-                        await self.log("⚠️ Tiempo de espera agotado buscando texto clave. El formulario podría estar vacío o lento.")
+                    # ESPERAR A QUE CARGUE EL FORMULARIO EN ALGÚN FRAME
+                    await self.log("Esperando carga de datos en formulario (Buscando en todos los frames)...")
                     
-                    # Pequeña espera extra para que los frames terminen de poblarse
-                    await asyncio.sleep(5)
+                    form_ready = False
+                    for _ in range(15): # Intentar por 30 segundos
+                        for f in page.frames:
+                            try:
+                                content = await f.inner_text("body")
+                                if "Débito" in content or "538" in content or "IVA" in content:
+                                    form_ready = True
+                                    break
+                            except: continue
+                        if form_ready: break
+                        await asyncio.sleep(2)
+                    
+                    if not form_ready:
+                        await self.log("⚠️ No se detectó contenido del formulario tras 30s. Intentando extracción de todos modos.")
+                    else:
+                        await self.log("✅ Contenido del formulario detectado en los frames.")
+                    
+                    await asyncio.sleep(3) # Estabilización final
 
                     for cod in codigos_objetivo.keys():
                         await self.log(f"Buscando Código [{cod}]...")
@@ -736,40 +746,43 @@ class SIIScraper:
                                     valor = await frame.evaluate(f"""(c) => {{
                                         const cleanNum = (str) => {{
                                             if (!str) return null;
-                                            // Eliminar todo lo que no sea dígito
                                             const cleaned = str.replace(/[^0-9]/g, '');
-                                            return cleaned.length > 0 ? cleaned : null;
+                                            return cleaned.length > 0 ? parseInt(cleaned).toString() : null;
                                         }};
 
-                                        // 1. Búsqueda por ID/Name Directo
-                                        const exact = document.getElementById('valCode' + c) || 
-                                                       document.getElementById('code' + c) ||
-                                                       document.querySelector(`input[id*="valCode${{c}}"]`) ||
-                                                       document.querySelector(`input[name*="valCode${{c}}"]`);
-                                        if (exact && exact.value && cleanNum(exact.value)) return exact.value;
-
-                                        // 2. Búsqueda por texto del código en cualquier elemento
-                                        // Buscamos elementos que contengan el código rodeado de algo no numérico
-                                        const all = Array.from(document.querySelectorAll('td, label, span, div, b'));
-                                        const target = all.find(el => {{
-                                            const t = el.innerText.trim();
-                                            return t === c || t === '['+c+']' || t === '('+c+')' || t === c+':';
-                                        }});
+                                        // 1. Prioridad: Input con ID o Name que contenga el código
+                                        const input = document.getElementById('valCode' + c) || 
+                                                      document.getElementById('code' + c) ||
+                                                      document.querySelector(`input[id*="${{c}}"]`) ||
+                                                      document.querySelector(`input[name*="${{c}}"]`);
                                         
-                                        if (target) {{
-                                            // El valor suele estar en la misma fila (tr) o en el siguiente div/td
-                                            const row = target.closest('tr') || target.closest('div.row') || target.parentElement;
-                                            if (row) {{
-                                                const input = row.querySelector('input');
-                                                if (input && input.value && cleanNum(input.value)) return input.value;
+                                        if (input && input.value && cleanNum(input.value)) return input.value;
 
-                                                // Si no hay input, buscar el texto numérico más probable en la fila
-                                                const cells = Array.from(row.querySelectorAll('td, div, span'))
-                                                                  .map(el => el.innerText.trim())
-                                                                  .filter(t => t !== '' && t !== target.innerText.trim());
-                                                
-                                                for (let t of cells.reverse()) {{
-                                                    if (cleanNum(t)) return t;
+                                        // 2. Búsqueda por "Label" o Celda que contenga el código (Regex)
+                                        // Buscamos algo como "[504]" o "504:" o "(504)" en el texto
+                                        const elements = Array.from(document.querySelectorAll('td, span, div, b, label'));
+                                        const regex = new RegExp('(\\\\[|\\\\(|^|\\\\s)' + c + '(\\\\]|\\\\)|:|\\\\s|$)');
+                                        
+                                        const labelEl = elements.find(el => regex.test(el.innerText));
+                                        
+                                        if (labelEl) {{
+                                            // Si la celda misma tiene el número largo (ej: "504: 28.500.956")
+                                            if (cleanNum(labelEl.innerText) && cleanNum(labelEl.innerText).length > c.length) {{
+                                                return labelEl.innerText;
+                                            }}
+
+                                            // Si no, buscar en la fila o alrededores
+                                            const container = labelEl.closest('tr') || labelEl.closest('div.row') || labelEl.parentElement;
+                                            if (container) {{
+                                                // Buscar input en el contenedor
+                                                const inCont = container.querySelector('input');
+                                                if (inCont && inCont.value && cleanNum(inCont.value)) return inCont.value;
+
+                                                // Buscar cualquier número largo en las celdas hermanas
+                                                const siblings = Array.from(container.querySelectorAll('td, div, span'));
+                                                for (let s of siblings.reverse()) {{
+                                                    const val = cleanNum(s.innerText);
+                                                    if (val && val !== c) return s.innerText;
                                                 }}
                                             }}
                                         }}
