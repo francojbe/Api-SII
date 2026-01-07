@@ -761,84 +761,42 @@ class SIIScraper:
                                         return cleaned.length > 0 ? parseInt(cleaned).toString() : null;
                                     }};
 
-                                    // ESTRATEGIA 1: Input directo (Standard)
-                                    // Probamos selectores comunes del SII
-                                    const selectors = [
-                                        '#valCode' + c,
-                                        '#code' + c,
-                                        `input[id*="${c}"]`,
-                                        `input[name*="${c}"]`,
-                                        `input[name*="frm_r_${c}"]` // formato clásico antiguo
-                                    ];
+                                    // 1. Prioridad: Input con ID o Name que contenga el código
+                                    const input = document.getElementById('valCode' + c) || 
+                                                  document.getElementById('code' + c) ||
+                                                  document.querySelector(`input[id*="${{c}}"]`) ||
+                                                  document.querySelector(`input[name*="${{c}}"]`);
                                     
-                                    for (let sel of selectors) {{
-                                        const input = document.querySelector(sel);
-                                        if (input && input.value && cleanNum(input.value)) return input.value;
-                                    }}
+                                    if (input && input.value && cleanNum(input.value)) return input.value;
 
-                                    // ESTRATEGIA 2: Búsqueda Semántica en Texto (Para vista de Resumen/Propuesta)
-                                    // Buscamos nodos de texto que contengan "[CODE]" o "CODE:"
-                                    // y luego buscamos el valor numérico más cercano en su contexto.
+                                    // 2. Búsqueda por "Label" o Celda que contenga el código (Regex)
+                                    // Buscamos algo como "[504]" o "504:" o "(504)" en el texto
+                                    const elements = Array.from(document.querySelectorAll('td, span, div, b, label'));
+                                    const regex = new RegExp('(\\\\[|\\\\(|^|\\\\s)' + c + '(\\\\]|\\\\)|:|\\\\s|$)');
                                     
-                                    const xpath = `//*[contains(text(), '${c}')]`;
-                                    const iterator = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                                    const labelEl = elements.find(el => regex.test(el.innerText));
                                     
-                                    for (let i = 0; i < iterator.snapshotLength; i++) {{
-                                        let node = iterator.snapshotItem(i);
-                                        
-                                        // Validar que el texto sea realmente el código (ej: "[538]" o "538")
-                                        // Evitar coinciencias falsas como teléfono "538..."
-                                        const text = node.textContent.trim();
-                                        const regexCode = new RegExp('(\\\\[|\\\\(|^|\\\\s|:)' + c + '(\\\\]|\\\\)|:|\\\\.|\\\\s|$)');
-                                        
-                                        if (regexCode.test(text)) {{
-                                            // Encontrado una etiqueta candidata.
-                                            // Paso A: Verificar si el valor está en el mismo nodo (ej: "538: $100.000")
-                                            const parts = text.split(c);
-                                            if (parts.length > 1) {{
-                                                const potentialVal = cleanNum(parts[1]);
-                                                if (potentialVal && potentialVal.length > 0) return parts[1]; // Retornar texto original para mantener formato
+                                    if (labelEl) {{
+                                        // Si la celda misma tiene el número largo (ej: "504: 28.500.956")
+                                        if (cleanNum(labelEl.innerText) && cleanNum(labelEl.innerText).length > c.length) {{
+                                            return labelEl.innerText;
+                                        }}
+
+                                        // Si no, buscar en la fila o alrededores
+                                        const container = labelEl.closest('tr') || labelEl.closest('div.row') || labelEl.parentElement;
+                                        if (container) {{
+                                            // Buscar input en el contenedor
+                                            const inCont = container.querySelector('input');
+                                            if (inCont && inCont.value && cleanNum(inCont.value)) return inCont.value;
+
+                                            // Buscar cualquier número largo en las celdas hermanas
+                                            const siblings = Array.from(container.querySelectorAll('td, div, span'));
+                                            for (let s of siblings.reverse()) {{
+                                                const val = cleanNum(s.innerText);
+                                                if (val && val !== c) return s.innerText;
                                             }}
-                                            
-                                            // Paso B: Verificar nodo padre (row/tr) y buscar hermanos
-                                            let parent = node.parentElement;
-                                            if (!parent) continue;
-                                            
-                                            // Subir hasta encontrar un contenedor fila (TR o DIV row)
-                                            let row = parent;
-                                            let depth = 0;
-                                            while (row && row.tagName !== 'TR' && !row.className.includes('row') && depth < 4) {{
-                                                row = row.parentElement;
-                                                depth++;
-                                            }}
-                                            
-                                            if (row) {{
-                                                // Buscar inputs en la fila
-                                                const inputs = row.querySelectorAll('input');
-                                                for (let inp of inputs) {{
-                                                    if (cleanNum(inp.value)) return inp.value;
-                                                }}
-                                                
-                                                // Buscar celdas (TD) o Divs con números
-                                                const cells = row.querySelectorAll('td, div, span, strong');
-                                                // Recorremos buscando el último número válido (asumiendo que el valor está a la derecha)
-                                                let lastValue = null;
-                                                for (let cell of cells) {{
-                                                    const content = cell.innerText;
-                                                    if (content === text) continue; // saltar la etiqueta misma
-                                                    
-                                                    const cv = cleanNum(content);
-                                                    if (cv) lastValue = content;
-                                                }}
-                                                if (lastValue) return lastValue;
-                                            }}
-                                            
-                                            // Paso C: Next Sibling directo (para estructuras planas)
-                                            let sibling = parent.nextElementSibling;
-                                            if (sibling && cleanNum(sibling.innerText)) return sibling.innerText;
                                         }}
                                     }}
-                                    
                                     return null;
                                 }}""", cod)
 
