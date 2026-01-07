@@ -568,17 +568,14 @@ class SIIScraper:
 
     async def navigate_to_f29_from_home(self):
         """Navega al F29 utilizando las alertas de la página de inicio (Mi SII)."""
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(
-                viewport={'width': 1366, 'height': 768},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            )
-            page = await context.new_page()
+        page = await self._ensure_session()
 
-            try:
-                # 1. Login
+        try:
+            # Si no estamos logueados o en una URL del SII, _ensure_session ya hizo lo básico, 
+            # pero forzamos ir a la home de alertas si estamos perdidos.
+            if "portal.sii.cl" not in page.url and "rfiInternet" not in page.url:
                 await self._login(page)
+
                 
                 # 2. Esperar a la Home
                 await self.log("Esperando panel de alertas...")
@@ -825,8 +822,8 @@ class SIIScraper:
                 print(f"[{self.rut}]  Error navegando desde Home: {str(e)}")
                 await page.screenshot(path="error_navigation_home.png")
                 return False
-            finally:
-                await browser.close()
+            # REMOVIDO: finally browser.close() para permitir persistencia en Scouting Interactivo
+
     async def submit_f29(self, page, banco=None):
         """
         Finaliza el proceso de envío del F29. 

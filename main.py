@@ -80,12 +80,45 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 # Ejecutar en background para no bloquear el loop de lectura de WS
                 # Usamos asyncio.create_task para que corra "en paralelo"
-                asyncio.create_task(run_live_scout(scraper_instance, websocket))
+                task = asyncio.create_task(run_live_scout(scraper_instance, websocket))
+                SESSIONS[rut] = {"scraper": scraper_instance, "task": task}
+
+            elif command_data.get("command") == "confirm_f29_submission":
+                rut = command_data.get("rut")
+                banco = command_data.get("banco")
+                if rut in SESSIONS:
+                    scraper = SESSIONS[rut]["scraper"]
+                    # Nota: Aquí necesitaríamos la instancia de 'page' activa.
+                    # Por simplicidad en este MVP, asumimos que navigate_to_f29 dejó el browser abierto.
+                    # En una versión pro, pasaríamos la página.
+                    asyncio.create_task(run_final_submission(scraper, websocket, banco))
+                else:
+                    await manager.send_personal_message({"type": "log", "text": "❌ No hay una sesión activa para este RUT.", "log_type": "error"}, websocket)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         if scraper_instance:
              await scraper_instance.close_session()
+
+async def run_final_submission(scraper, websocket, banco):
+    try:
+        # Recuperar la página del scraper (esto requiere que el scraper guarde la página)
+        if not scraper.page:
+            await manager.send_personal_message({"type": "log", "text": "❌ La sesión del navegador se cerró. Reinicia el scouting.", "log_type": "error"}, websocket)
+            return
+
+        result = await scraper.submit_f29(scraper.page, banco)
+        if result:
+            await manager.send_personal_message({
+                "type": "log", 
+                "text": f"✅ Declaración enviada con éxito. Folio: {result['folio']}", 
+                "log_type": "success",
+                "payload": result
+            }, websocket)
+        else:
+            await manager.send_personal_message({"type": "log", "text": "❌ Falló el envío de la declaración.", "log_type": "error"}, websocket)
+    except Exception as e:
+        await manager.send_personal_message({"type": "log", "text": f"💥 Error en envío: {str(e)}", "log_type": "error"}, websocket)
 
 async def run_live_scout(scraper, websocket):
     try:
@@ -106,25 +139,34 @@ async def run_live_scout(scraper, websocket):
                  "datos": {}
              }
              
-             # Prompt enriquecido con los datos extraídos
+             # Obtener el análisis de la IA automáticamente
+             await manager.send_personal_message({"type": "log", "text": "🤖 Solicitando análisis al Auditor IA...", "log_type": "info"}, websocket)
+             analisis_ia = await auditor.analizar_f29(scouting_data)
+             
+             # Prompt enriquecido con los datos extraídos para el chat posterior
              datos_txt = json.dumps(scouting_data.get('datos', {}), indent=2)
-             sys_prompt = f"""Eres un Auditor Tributario. Acabas de realizar una nevegación EN VIVO para el RUT {rut_limpio}.
-             Se extrajeron los siguientes datos del formulario F29 (Propuesta):
+             sys_prompt = f"""Eres un Auditor Tributario de nivel SaaS Contable. Acabas de realizar una nevegación EN VIVO para el RUT {rut_limpio}.
+             Se extrajeron los siguientes datos:
              {datos_txt}
              
-             Usa estos valores para responder al usuario. Si el remanente es alto, coméntalo. Si hay pago, avisa.
+             Usa estos valores para el chat. Si el usuario pregunta qué hacer, guíalo según el análisis previo:
+             {analisis_ia}
              """
              
              SESSION_CONTEXT[rut_limpio] = {
                  "scouting_data": scouting_data,
-                 "base_system_prompt": sys_prompt
+                 "base_system_prompt": sys_prompt,
+                 "last_analysis": analisis_ia
              }
 
              await manager.send_personal_message({
                 "type": "log",
                 "text": "✅ Proceso finalizado con éxito.",
                 "log_type": "success",
-                "payload": scouting_data # Enviamos los datos al front
+                "payload": {
+                    "scouting": scouting_data,
+                    "analisis_ia": analisis_ia
+                }
             }, websocket)
              # Aquí podríamos enviar los datos finales si los tuviéramos
         else:
@@ -141,7 +183,9 @@ async def run_live_scout(scraper, websocket):
             "log_type": "error"
         }, websocket)
     finally:
-        await scraper.close_session()
+        # Mantener la sesión abierta para permitir interacción (ej: enviar declaración)
+        # await scraper.close_session()
+        pass
 
 # Configuración de Seguridad Simple
 API_KEY_CREDENTIAL = os.getenv("API_KEY_SCII", "mi_llave_secreta_123")

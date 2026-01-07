@@ -1,0 +1,567 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="/rfiInternet/ruxitagentjs_ICA7NVfghqrux_10327251022105625.js" data-dtconfig="app=0eda9ac06dd55ae7|cuc=3hq5c4eu|owasp=1|mel=100000|featureHash=ICA7NVfghqrux|md=mdcc1=a#conAutenticacion span.id|lastModification=1765276038485|tp=500,50,0|rdnt=1|uxrgce=1|srbbv=2|agentUri=/rfiInternet/ruxitagentjs_ICA7NVfghqrux_10327251022105625.js|reportUrl=/rfiInternet/rb_bf05726fov|rid=RID_-1140745519|rpid=1466552730|domain=sii.cl"></script><link rel="shortcut icon" href="favicon.ico">
+<script type="text/javascript" language="Javascript" src="rfi.nocache.js"></script><script defer="defer">rfi.onInjectionDone('rfi')</script>
+<script type="text/javascript" language="Javascript" src="rfi.utiles.js"></script>
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>SII | Servicio de Impuestos Internos</title>
+
+<script type="text/javascript">
+    function out_resp() {
+        if (xmlHttp.readyState==4 || xmlHttp.readyState=="complete"){
+            document.getElementById("MsgResp").innerHTML=xmlHttp.responseText;
+        }
+    }
+    </script>
+    <script type="text/javascript" language="Javascript">imgPath='rfiInternet/';</script>
+    <script type="text/javascript" language="Javascript">
+       function udm_(e){var t="comScore=",n=document,r=n.cookie,i="",s="indexOf",o="substring",u="length",a=2048,f,l="&ns_",c="&",h,p,d,v,m=window,g=m.encodeURIComponent||escape;if(r[s](t)+1)for(d=0,p=r.split(";"),v=p[u];d<v;d++)h=p[d][s](t),h+1&&(i=c+unescape(p[d][o](h+t[u])));e+=l+"_t="+ +(new Date)+l+"c="+(n.characterSet||n.defaultCharset||"")+"&c8="+g(n.title)+i+"&c7="+g(n.URL)+"&c9="+g(n.referrer),e[u]>a&&e[s](c)>0&&(f=e[o](0,a-8).lastIndexOf(c),e=(e[o](0,f)+l+"cut="+g(e[o](f+1)))[o](0,a)),n.images?(h=new Image,m.ns_p||(ns_p=h),h.src=e):n.write("<","p","><",'img src="',e,'" height="1" width="1" alt="*"',"><","/p",">")};
+       function registrar_interaccion(nombre_modulo,rut_contribuyente,rut_declarante,periodo, mes, folio){
+           /*
+           nombre_modulo       string
+           rut_contribuyente   string
+           rut_declarante      string
+           periodo             int
+           mes                 int
+           folio               int
+       */
+       var parametros = '';
+       if(rut_contribuyente != '' && typeof rut_contribuyente != 'undefined' && rut_contribuyente != null){
+           parametros = parametros + '&rut_contribuyente=' + rut_contribuyente;
+       }
+       if(rut_declarante != '' && typeof rut_declarante != 'undefined' && rut_declarante != null){
+           parametros = parametros + '&rut_declarante=' + rut_declarante;
+       }
+       if(periodo != "" && typeof periodo != 'undefined' && periodo != null ){
+           parametros = parametros + '&periodo=' + periodo;
+       }
+       if(mes != '' && typeof mes != 'undefined' && mes != null){
+           parametros = parametros + '&mes=' + mes;
+       }
+       if(folio != '' && typeof folio != 'undefined' && folio !=null){
+           parametros = parametros + '&folio=' + folio;
+       }
+
+       udm_('http'+(document.location.href.charAt(4)=='s'?'s://sb':'://b')+'.scorecardresearch.com/b?c1=2&c2=6906639&ns_site=iva-prod-traza&name='+nombre_modulo+parametros);
+        }
+
+  </script>
+
+       <noscript><p><img src="http://b.scorecardresearch.com/p?c1=2&amp;c2=6906639&amp;ns_site=iva-prod-traza&amp;name=noscript" height="1" width="1" alt="*"></p></noscript>
+       
+
+<link rel="stylesheet" href="https://www4.sii.cl/rfiInternet/formulariowidget-styles.css"><link rel="stylesheet" href="https://www4.sii.cl/rfiInternet/sdicommonsweb.css"><style>.form-description{font-size:12px !important;text-align:justify;line-height:1.5;}.labelBold{font-weight:bold;}.Normal{color:black;font-family:Arial, Helvetica, sans-serif;font-size:13px;background-color:white;text-align:justify;}.MainView{margin:auto;padding:0;border-spacing:0;}.MainCenter{margin-left:auto;margin-right:auto;text-align:center;}.bel-panel{width:100%;text-align:left !important;padding-bottom:10px;}.padded-bel-panel{width:98%;text-align:left !important;}#separador{clear:both;}#item-form{padding:5px;font-size:12px;}.gwt-ListBox{font-size:12px;}.tabla{border:1px solid #d15600;border-collapse:collapse;margin:0;color:#333;width:100%;}.tabla_f29{border:1px solid #ccc;border-collapse:collapse;margin:0;color:#333;width:100%;}.dialogo{width:400px;}.tabla_fixed{border:1px solid #d15600;border-collapse:collapse;margin:0;color:#333;}.tabla_f29_fixed{border:1px solid #ccc;border-collapse:collapse;margin:0;color:#333;}.tabla td{padding:2px !important;border:1px solid #d15600;background-color:#fed9af;}.tabla_f29 td{padding:2px !important;border:1px solid #ccc;background-color:#d6fed6;}.tabla_f29 td.fw-campoOculto{background-color:#fff !important;}.tabla_F50_V4 td.fw-campoOculto div.fw-valorCampoOculto{font-family:Verdana, Arial, Helvetica, sans-serif;font-size:11px;width:83px;height:17px;background-color:#ebebe4;color:#8b8b8b;border-style:inset;border-color:#e6e6da #eaeaea #eaeaea #e6e6da;border-width:1px;overflow:hidden;}.F50_V4_autocalculo_totalizador{font-size:10px !important;width:120px !important;}.tabla_F50_V4 td.fw-campoOculto div.fw-campoDestacado{background-color:#faa !important;font-family:sans-serif;font-size:8pt;border-style:solid !important;border-color:red !important;border-width:1px !important;}.tabla_td_codigo{text-align:center;background-color:#eee;color:#666 !important;font-weight:bold !important;width:5% !important;}.tabla_td_nlinea{background-color:#fff !important;color:#2ab !important;text-align:center !important;font-weight:bold !important;width:5%;}.tabla_td_hide{background-color:#fff !important;border:0 !important;}.tabla_fixed td{padding:2px !important;border:1px solid #d15600;background-color:#fed9af;}.tabla_f29_fixed td{padding:2px !important;border:1px solid #ccc;background-color:#d6fed6;}.tabla_td_normal{padding:2px !important;background-color:#fff !important;}.tabla_td_normal_peq{padding:2px !important;width:12px !important;background-color:#fff !important;}.tabla_td_bold_peq{padding:2px !important;width:12px !important;background-color:#fff !important;font-weight:bold;}.tabla_td_normal_centro{padding:2px !important;background-color:#fff !important;text-align:center !important;white-space:nowrap;}.tabla_td_fixed_right{padding:2px !important;background-color:#fff !important;width:90px !important;white-space:nowrap;text-align:right;}.tabla_td_fixed_left{padding:2px !important;background-color:#fff !important;width:90px;white-space:nowrap;text-align:left;}.tabla_td_fixed_center{padding:2px !important;background-color:#fff !important;width:90px;white-space:nowrap;text-align:center;}.tabla_td_right{padding:2px !important;background-color:#fff !important;white-space:nowrap;text-align:right;}.tabla_td_left{padding:2px !important;background-color:#fff !important;white-space:nowrap;text-align:left;}.tabla_td_center{padding:2px !important;background-color:#fff !important;white-space:nowrap;text-align:center;}.tabla_caption{font-weight:bold;background:#f2f2f2;text-align:center !important;}.tabla_th,.tabla_th_left{background-color:#fed9af;text-align:left;font-weight:bold;}.tabla_th_center{background-color:#fed9af;text-align:center;font-weight:bold;}.tabla_th_row{background-color:#fed9af;text-align:left;font-weight:bold;font-size:10px !important;width:5%;}.tabla_td_bold{background-color:#fff !important;text-align:left;font-weight:bold;}.tabla_tfoot{border:1px solid #c1dbf2;background-color:#f7f7f7;text-align:left;}.tabla_internet{border:1px solid #808080;border-spacing:0;border-collapse:collapse;margin:auto;}.tabla_internet_sborde tr>td{border:0;}.tabla_internet_2{border:1px solid #808080;border-collapse:collapse;color:#333;margin:0 auto;}.tabla_internet_2 td{font-size:8pt;border:1px solid #808080 !important;}.tabla_internet_3{border:1px solid #808080;border-spacing:0;border-collapse:collapse;margin:0 auto 10px 4px;text-align:left;}.tabla_internet_4{border:1px solid #808080;border-spacing:0;border-collapse:collapse;margin:0 auto 10px 14px;text-align:left;}.tabla_internet_4 td{font-size:8pt;border:1px solid #808080 !important;}.tabla_internet_5{margin:0 auto 10px 0;font-size:15px;}.tabla_internet td{padding:2px !important;border:1px solid #808080;}.tabla_internet_6{border:1px solid #c1dbf2;border-collapse:collapse;margin:auto;color:#333;border-spacing:0;}.tabla_internet_6 td{padding:2px !important;border:1px solid #c1dbf2;text-align:left !important;}.tabla_caption_internet{font-weight:bold;border:1px solid #ccc;background:#f2f2f2;text-align:center !important;}.tabla_th_internet{border:1px solid #f3f3f3 !important;background-color:#c1dbf2;text-align:left;font-weight:bold;}.tabla_pago{border:1px solid #c1dbf2;border-collapse:collapse;margin:auto;color:#333;}.tabla_pago td{padding:2px !important;border:1px solid #c1dbf2;}.tabla_pago tr{vertical-align:top;}.pagos-multi-header{padding:10px !important;border:1px solid #f3f3f3 !important;color:black;vertical-align:middle !important;background-color:#d9edf7;text-align:center;font-weight:bold;}.monto{text-align:right;}td.monto{vertical-align:middle;}.tabla_pago th{padding:10px !important;border:1px solid #f3f3f3 !important;background-color:#d9edf7;text-align:center;font-weight:bold;}hr{height:1px;border:none 0;border-top:1px solid #069;margin-top:1px !important;margin-bottom:1px !important;}#main{padding-top:10px;padding-bottom:10px;}.buttons td{padding-left:5px;padding-right:5px;}.gwt-Button,.button-little{font-size:11px !important;width:auto;}input.fw-campoDestacado{background-color:#faa;font-family:sans-serif;font-size:8pt;border-style:solid;border-color:red;border-width:1px;}.tabla_disabled_text{font-family:Verdana, Arial, Helvetica, sans-serif;font-size:11px;width:83px;height:17px;background-color:#ebebe4;color:#8b8b8b;border-style:inset;border-color:#e6e6da #eaeaea #eaeaea #e6e6da;border-width:1px;TEXT-ALIGN:right;}.gwt-TextBox{width:110px;}.processing-upload-text{color:#8b8b8b;font-family:Verdana, Arial, Helvetica, sans-serif;font-size:8pt;font-weight:bold;padding:10pt;}.tabla_interna td{border:0;}.tabla_interna_2{border:0;margin:0 auto 10px auto;}.tabla_interna_3{border:0;margin:0 auto 1px auto;text-align:left;}.tabla_interna_4{border:0;margin:0 auto 10px 1px;text-align:left;}.filter-label{color:#0064a0 !important;}.filter-title{background:#0064a0 !important;color:#fff !important;}.filter-title-2{background:#0064a0 !important;color:#fff !important;text-align:left;font:bold;}.gwt-DialogBox{border:2px #224374 outset;background-color:#fff;font-size:10pt;z-index:2000;}.gwt-DialogBox .Caption{background-color:#426394;color:#fff;padding:3px;margin:2px;font-weight:bold;cursor:default;font-size:11pt;text-align:center;z-index:2000;}.selPeriodo{font-size:12px;display:inline;font-weight:bold;}hr{height:1px !important;border:none 0 !important;border-top:1px solid #069 !important;}h2{font-size:12px !important;display:inline;}.h4,h4{font-size:11px !important;}.processing-widget{background:#f8f8f8;padding:15pt;border:2px solid #c0c0c0;z-index:2000;}.processing-widget-text{font-family:arial, verdana, trebuchet ms, sans;font-size:10pt;color:#404040;padding-left:10pt;z-index:2000;}.textoEnLinea{font-size:12px;}.leftFloater{float:left;padding-right:3px;}.fondoVerde{background-color:#5cb85c !important;}.justificado{text-align:justify;}.ocultar{display:none;}.tabla_th_f50v2{background-color:#d7dbdc;text-align:left;font-weight:bold;}.tabla_f50v2{border:1px solid #5a5353;border-collapse:collapse;margin:0;color:#333;width:850px;}.tabla_f50v22{border:1px solid #5a5353;border-collapse:collapse;margin:0;color:#333;}.tabla_f50v2 td,.tabla_f50v22 td{padding:2px !important;border:1px solid #5a5353;background-color:#d7dbdc;}.tabla_F50_V2 td.fw-campoOculto div.fw-valorCampoOculto{font-family:Verdana, Arial, Helvetica, sans-serif;font-size:11px;width:83px;height:17px;background-color:#ebebe4;color:#8b8b8b;border-style:inset;border-color:#e6e6da #eaeaea #eaeaea #e6e6da;border-width:1px;overflow:hidden;}.tabla_td_normal_cod{padding:2px !important;background-color:#ecf0f1 !important;}.tabla_td_normal_tit{padding:2px !important;background-color:#969c9e !important;text-align:center;}.tabla_F50_V4{border:1px solid #b9c2ed;border-collapse:collapse;margin:0;color:#333;width:100%;}.td_F50_V4{background-color:#da9694 !important;}.titulo_F50_V4{color:#fff;background-color:#0070c1 !important;}.tabla_F50_V4 td{padding:2px !important;border:1px solid #b9c2ed;background-color:#f2f2f2;}.tabla_F50_V4_fixed{border:1px solid #b9c2ed;border-collapse:collapse;margin:0;color:#333;}.tabla_F50_V4_fixed td{padding:2px !important;border:1px solid #b9c2ed;background-color:#f3f3f3;}.tabla_F50_V4 td.centrado{text-align:center;}.tabla_F50_V4 td.subtitulo{text-align:left;font-weight:bold;}.tabla_F50_V4 td input.gwt-TextBox{width:83px;font-size:10px !important;font-family:Arial, Verdana, Helvetica, sans-serif;}.F50_V4_autocalculo{font-family:Arial, Verdana, Helvetica, sans-serif;font-size:10px;width:83px;height:17px;background-color:#ebebe4;color:#8b8b8b;border-style:inset;border-color:#e6e6da #eaeaea #eaeaea #e6e6da;border-width:1px;}.tabla_F50_V4 td.campo_nombre input.gwt-TextBox{width:350px;}.tabla_f29{border:1px solid #ccc;border-collapse:collapse;margin:0;color:#333;width:100%;}.tabla_f29 td{padding:2px !important;border:1px solid #ccc;background-color:#d6fed6;}.tabla_f29_fixed{border:1px solid #ccc;border-collapse:collapse;margin:0;color:#333;}.tabla_f29_fixed td{padding:2px !important;border:1px solid #ccc;background-color:#d9edf7;}.tabla_f29 td.fw-campoOculto{background-color:#fff !important;}.campoComplementar{background-color:#f7f496 !important;font-family:sans-serif;font-size:8pt;height:100%;border-style:solid;border-color:red;border-width:1px;}.barraTituloPropuestaF29{background:#337ab7;width:100%;color:#fff;height:38px;padding-left:10px;text-align:left;padding-top:10px;font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-size:15px;line-height:normal;border-top-right-radius:4px;border-top-left-radius:4px;}.texto-general-propuesta{font-size:12px !important;font-family:Arial, Helvetica, sans-serif !important;color:#000;line-height:1.5;text-align:justify;}.texto-general-propuesta-bold{font-size:12px !important;font-family:Arial, Helvetica, sans-serif !important;color:#000;font-weight:bold;line-height:1.5;text-align:justify;}.texto-cabecera-propuesta{font-size:15px !important;font-family:Arial, Helvetica, sans-serif !important;text-align:center;color:#000;line-height:1.5;padding:0 10px 0 10px;}.cellVer{text-decoration:underline;color:blue;cursor:pointer;cursor:hand;}.cursorHand,.puntero{cursor:pointer;cursor:hand;}.celda-centrada,.celda-centrada-bb{padding:0;text-align:center;}.f29_celda_cabecera_propuesta,.f29_celda_cabecera{margin-left:0;margin-right:0;vertical-align:middle;background-color:#d9edf7;color:black;font-size:11px;font-weight:bold;text-align:center;}.f29_celda_cabecera_b{margin-left:0;margin-right:0;border-left:1px solid #5a5353;vertical-align:middle;background-color:#d9edf7;color:black;font-size:11px;font-weight:bold;text-align:center;}.f29_celda_cabecera_izq{margin-left:0;margin-right:0;vertical-align:middle;background-color:#d9edf7;color:black;font-size:13px;text-indent:25px;font-weight:bold;text-align:justify;}.f29_celda_cabecera_der{margin-left:0;margin-right:0;vertical-align:middle;background-color:#73b464;color:black;font-size:11px;font-weight:bold;text-align:right;}.f29_celda_columna_cabecera_bt{margin-left:0;margin-right:0;border:1px solid #5a5353;vertical-align:middle;background-color:#d9edf7;font-size:11px !important;font-weight:bold;height:25px !important;text-align:center;}.f29_celda_columna_cabecera,.f29_celda_columna_cabecera_b{margin-left:0;margin-right:0;border-left:1px solid #5a5353;border-bottom:1px solid #5a5353;vertical-align:middle;background-color:#d9edf7;font-size:11px !important;font-weight:bold;height:25px !important;text-align:center;}.f29_celda_columna_cabecera_izq{margin-left:0;margin-right:0;border-left:1px solid #5a5353;border-bottom:1px solid #5a5353;vertical-align:middle;background-color:#d9edf7;font-size:11px !important;text-indent:25px;font-weight:bold;height:25px !important;text-align:justify;}.f29_celda_columna_cabecera_der{margin-left:0;margin-right:0;vertical-align:middle;background-color:#9fc989;font-size:11px !important;height:25px;font-weight:bold;text-align:right;}.celda-linea{border-left:1px solid #5a5353;border-bottom:1px solid #5a5353;margin-left:0;margin-right:0;vertical-align:middle;background-color:#e8e8e8;color:#000;font-size:9px !important;text-align:center;}.texto-informativo{font-weight:normal;text-align:justify;font-size:9px !important;}.celda-codigo,.celda-codigo-propuesta{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background-color:#d9edf7 !important;color:#000 !important;}.celda-signo{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;width:15px;background:#e8e8e8;}.celda-glosa-centro{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background:#d9edf7;}.celda-glosa-derecha{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:right;vertical-align:middle;background:#d9edf7;width:100%;padding-right:5px;}.celda-glosa{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:left;vertical-align:middle;background:#fff;padding-left:4px;}.celda-linea-b{border-top:1px solid #5a5353;border-right:1px solid #5a5353;border-left:1px solid #5a5353;border-bottom:1px solid #73b464;margin-left:0;margin-right:0;vertical-align:middle;background-color:#73b464;color:#000;font-size:9px !important;font-weight:bold;text-align:center;}.celda-codigo-b{border-right:1px solid #000;border-left:1px solid #000;border-bottom:1px solid #dcdcdc !important;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background-color:#eee !important;color:#000 !important;}.celda-signo-b{border-right:1px solid #000;border-left:1px solid #000;border-bottom:1px solid #dcdcdc;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;width:15px;background:#dcdcdc;}.celda-glosa-b{border-right:1px solid #000;border-left:1px solid #000;border-bottom:1px solid #dcdcdc;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:left;padding-left:4px;vertical-align:middle;background:#d9edf7;}.celda-glosa-c{border-top:1px solid #dcdcdc;border-right:1px solid #000;border-left:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:left;vertical-align:middle;background:#dcdcdc;}.borde_tabla_f29{border-collapse:collapse;margin:0;}.borde_tabla_f29 .gwt-TextBox,.fw-campoOculto,.tabla_disabled_text{border:none !important;font-size:10px;text-align:right;}.borde_tabla_f29 .tabla_td_codigo,.borde_tabla_f29_xslt .tabla_td_codigo,.borde_tabla_f29_sb .tabla_td_codigo,.borde_tabla_f29_sbs .tabla_td_codigo{background-color:white !important;}.borde_tabla_f29 td{border-collapse:collapse;margin:0;border:1px solid #000 !important;}.borde_tabla_f29_xslt{border-collapse:collapse;margin:0;width:inherit;}.borde_tabla_f29_xslt .gwt-TextBox,.fw-campoOculto,.tabla_disabled_text{border:none !important;font-size:10px;text-align:right;}.borde_tabla_f29_xslt td{border-collapse:collapse;margin:0;border:1px solid #000 !important;}.borde_tabla_f29_sb{border-collapse:collapse;margin:0;}.noleft{text-align:inherit;}.borde_tabla_f29_sb .gwt-TextBox,.fw-campoOculto,.tabla_disabled_text{border:none !important;}.borde_tabla_f29_sbs{border-collapse:collapse;margin:0;width:100%;}.borde_tabla_f29_sbs .gwt-TextBox,.fw-campoOculto,.tabla_disabled_text{border:none !important;font-size:10px;text-align:right;}.borde_tabla_f29_sbs td{border-collapse:collapse;margin:0;border-right:1px solid #000 !important;border-left:1px solid #000 !important;border-bottom:1px solid #000 !important;}.f29_cabecera_subtabla_bs{margin-left:0;margin-right:0;border-top:1px solid #000;border-left:1px solid #5a5353;border-right:1px solid #5a5353;vertical-align:middle;background-color:#73b464;color:black;font-size:11px;font-weight:bold;width:100%;}.contenedor_formulario{margin-left:0;margin-right:0;border-top:1px solid #ccc;border-right:1px solid #ccc;border-bottom:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom-left-radius:5px;border-bottom-right-radius:5px;vertical-align:middle;color:black;font-size:13px;font-weight:normal;}.caja{margin-left:0;margin-right:0;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom-left-radius:5px;border-bottom-right-radius:5px;color:black;font-size:9px;}.contenedor_formulario_b{margin-left:0;margin-right:0;border:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom-left-radius:5px;border-bottom-right-radius:5px;vertical-align:middle;color:black;font-size:9px;font-weight:normal;}.f29_celda_cabecera_bi{margin-left:0;margin-right:0;vertical-align:middle;background-color:#73b464;color:black;font-size:11px;font-weight:bold;text-align:center;border-bottom:1px solid #5a5353;}.f29_cabecera_tabla{margin-left:0;margin-right:0;border-left:1px solid #5a5353;border-top:1px solid #5a5353;border-right:1px solid #5a5353;border-top-left-radius:5px;border-top-right-radius:5px;vertical-align:middle;background-color:#73b464;color:black;font-size:13px;font-weight:bold;width:100%;}.f29_cabecera_subtabla{margin-left:0;margin-right:0;border-left:1px solid #5a5353;border-right:1px solid #5a5353;vertical-align:middle;background-color:#73b464;color:black;font-size:11px;font-weight:bold;width:100%;}.f29_cabecera_subtabla_bi{margin-left:0;margin-right:0;border-left:1px solid #5a5353;border-right:1px solid #5a5353;border-bottom:1px solid #5a5353;vertical-align:middle;background-color:#73b464;color:black;font-size:11px;font-weight:bold;width:100%;}.f29_cabecera_subtabla_c{margin-left:0;margin-right:0;height:20px;border:1px solid #5a5353;vertical-align:middle;background-color:#d9edf7;color:black;font-size:11px;font-weight:bold;text-align:center;}.tabla_f29{border:1px solid #5a5353;border-collapse:collapse;margin:0;color:#333;width:100%;}.tabla_f29 td{padding:2px !important;border:1px solid #ccc;background-color:#d6fed6;}.tabla_f29_fixed{border:1px solid #ccc;border-collapse:collapse;margin:0;color:#333;}.fw-campoOculto{background-color:#eee;border-left:1px solid #5a5353;border-right:1px solid #5a5353;border-bottom:1px solid #5a5353;height:16px;text-align:right;}.fw-campoOculto-c{background-color:#eee;border-left:1px solid #5a5353;border-bottom:1px solid #5a5353;border-right:1px solid #5a5353;height:16px;text-align:center;pointer-events:none;}.fw-campoMinimo-c{border-style:solid;border-color:silver;border-width:1px;min-height:16px;text-align:center;}.celda-glosa-propuesta-azul{font-weight:bold;font-family:Arial, Verdana, sans-serif;border:1px solid #000;background:#d9edf7;text-align:justify;font-size:12px;padding-left:4px;height:20px;}.celda-suma-propuesta{font-weight:bold;font-family:Arial, Verdana, sans-serif;border:1px solid #000;background:#e8e8e8;text-align:center;font-size:12px;padding-left:4px;height:20px;}.celda-glosa-propuesta-azul-c{font-weight:bold;font-family:Arial, Verdana, sans-serif;border:1px solid #000;background:#d9edf7;text-align:center;font-size:12px;}.celda-total-propuesta-azul{padding:2px !important;background-color:#d9edf7 !important;white-space:nowrap;text-align:right;color:black;height:14px;border-style:solid;border-color:silver;border-width:1px;font-size:9px !important;font-weight:bold;}.tabla_td_fixed_c_right{padding:2px !important;background-color:#fff !important;white-space:nowrap;text-align:right;color:black;height:14px;border-style:solid;border-color:silver;border-width:1px;font-size:9px !important;}.celda-glosa-propuesta-naranjo-c{font-weight:bold;font-family:Arial, Verdana, sans-serif;border:1px solid #000;background:#fd934f;text-align:center;font-size:12px;}.celda-glosa-propuestaF29-azul{font-family:Arial, Verdana, sans-serif;border:1px solid #000;background:#d9edf7;text-align:center;font-size:12px;-moz-border-radius:8px;-webkit-border-radius:8px;border-radius:8px;border-collapse:initial;}.celda-glosa-propuesta-blanco{color:black;font-weight:normal;font-family:Arial, Helvetica, sans-serif;border:1px solid #c1dbf2;font-size:12px;text-align:justify;background:white;}.caja-propuesta{background:white;margin-left:0;margin-right:0;border-top-left-radius:5px;border-top-right-radius:5px;border-bottom-left-radius:5px;border-bottom-right-radius:5px;color:black;font-size:9px;}.celda-glosa-propuesta-blanco-c{color:black;font-weight:normal;font-family:Arial, Helvetica, sans-serif;border:1px solid #c1dbf2;font-size:12px;text-align:center;background:white;}.linea-divisoria{border-bottom:1px solid #09c;display:block;font-family:Arial, Helvetica, sans-serif;margin:0 0 15px;padding:2px 0 6px;text-align:justify;color:#333;}.header_tabla_center{border:1px solid #c1dbf2;border-collapse:collapse;padding:3px;background-color:#c1dbf2;font-family:Arial;font-size:12px;font-weight:bold;text-align:center;}.gw-tabla-detalle td{background-color:#d9edf7;margin-left:auto;margin-right:auto;border:1px solid #ddd;border-collapse:separate;margin:auto;table-layout:fixed;padding:5px;}.gw-tabla-detalle2 td{background-color:#d9edf7;margin-left:auto;margin-right:auto;border-collapse:collapse;border:1px solid #ddd;margin:auto;table-layout:fixed;padding:0;}.gw-tabla-detalle-recalculo{background-color:#d9edf7;margin-left:auto;margin-right:auto;border-collapse:collapse;margin:auto;table-layout:fixed;padding:5px;}.gw-small-center{font-size:0.7em;text-align:center;}.gw-small-justify{font-size:0.7em;text-align:justify;}.gw-small-left{font-size:0.7em;text-align:left;}.gw-small-right{font-size:0.7em;text-align:right;}.gw-letra8-center{font-size:8px !important;text-align:center;}.gw-letra8-justify{font-size:8px !important;text-align:justify;}.gw-letra8-left{font-size:8px !important;text-align:left;}.gw-letra8-right{font-size:8px !important;text-align:right;}.gw-letra9-center{font-size:9px !important;text-align:center;}.gw-letra9-justify{font-size:9px !important;text-align:justify;}.gw-letra9-left{font-size:9px !important;text-align:left;}.gw-letra9-right{font-size:9px !important;text-align:right;}.gw-letra10-center{font-size:10px !important;text-align:center;}.gw-letra10-justify{font-size:10px !important;text-align:justify;}.gw-letra10-left{font-size:10px !important;text-align:left;}.gw-letra10-right{font-size:10px !important;text-align:right;}.gw-letra11-center{font-size:11px !important;text-align:center;}.ppmo-rfi-codigo{background-color:#3a87ad !important;color:white;}.gw-codigo-celeste{background-color:#d9edf7;}.gw-header-caption{font-weight:bold;border:1px solid #ccc;background:#f2f2f2;text-align:center;}.gw-header-justify{border:1px solid #f3f3f3;background-color:#d9edf7;font-weight:bold;text-align:justify;padding:5px !important;}.gw-header-center{border:1px solid #f3f3f3;background-color:#d9edf7;font-weight:bold;text-align:center;}.gw-detalle-center{text-align:center;font-size:9px !important;}.gw-detalle-justify{text-align:justify;font-size:9px !important;}.gw-detalle-left{text-align:left;font-size:9px !important;}.gw-detalle-right{text-align:right;font-size:9px !important;}.celda-monto{text-align:right;font-size:9px !important;border:none;}.celda-sin-borde{border:none !important;height:10px;}.tabla_td_fixed_b_right{padding:2px !important;background-color:#fff !important;width:90px !important;white-space:nowrap;text-align:right;border-style:solid;border-color:silver;border-width:1px;font-size:9px !important;}.celda-linea-bt{border:1px solid #5a5353;margin-left:0;margin-right:0;vertical-align:middle;background-color:#e8e8e8;color:#000;font-size:9px !important;text-align:center;}.celda-glosa-bt,.celda-glosa-prop-bt{border:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:left;vertical-align:middle;background:#fff;padding-left:4px;}.celda-glosa-link-bt{border:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:left;vertical-align:middle;background:#fff;padding-left:4px;cursor:hand;}.celda-codigo-bt{border:1px solid #000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background-color:#d9edf7 !important;color:#000 !important;}.celda-signo-bt{border:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;width:15px;background:#e8e8e8;}.rfiMessage{padding:10px !important;color:#f5f5f5;font-weight:400;font-size:14px !important;border-color:#c0c0c0;border-width:1px;border-radius:4px;cursor:pointer;cursor:hand;background-color:#337ab7;}.rfiMessage:hover{background-color:#002c48;}.gwt-Button{padding:10px !important;color:#f5f5f5;width:100% !important;font-weight:400;font-size:14px !important;border-color:#c0c0c0;border-style:solid;border-width:1px;border-radius:4px;-moz-border-radius:4px;-webkit-border-radius:4px;cursor:pointer;cursor:hand;background-color:#337ab7;border-color:#2e6da4;}.gwt-Button:hover{background-color:#002c48;}.gwt-DialogBox-asm{border:2px #224374 outset;background-color:#eee;font-size:10pt;z-index:2000;}.gwt-DialogBox-asistente .Caption{background-color:#eee;color:#fff;padding:3px;margin:2px;font-weight:bold;cursor:default;font-size:11pt;text-align:center;z-index:2000;left:770px;top:700px;}.gwt-DialogBox-asm hr{border-top:1px solid #eee !important;}.gwt-DialogBox{border:1px #224374 outset;border-radius:4px;background-color:#fff;}.dialogMiddleCenter{padding:20px;}.form-title{padding-top:10px !important;padding-left:10px !important;text-align:left;font-size:19px;font-weight:bold;}.gwt-InlineLabel{font-weight:bold;}.imagenBtnVolver{cursor:pointer;border-radius:4px;border-style:solid;background-color:#eb510d !important;border-color:#eb510d !important;color:#fff;cursor:hand;background-repeat:no-repeat;background-position:right;}.imagenBtnValidar{cursor:pointer;width:140px;border-radius:4px;background-color:#337ab7;border-color:#337ab7;color:#fff;cursor:hand;background-repeat:no-repeat;background-position:right;}.imagenBtnGuardar,.imagenBtnLimpiar{cursor:pointer;width:140px;border-radius:4px;background-color:#337ab7;color:#fff;cursor:hand;background-repeat:no-repeat;background-position:right;}.imagenBtnAsistentes{cursor:pointer;width:200px;border-radius:4px;background-color:#337ab7;color:#fff;cursor:hand;background-repeat:no-repeat;background-position:right;float:right;}.imagenBtnUpload,.imagenBtnFormulario{width:160px;border-radius:4px;background-color:#e9e9e9;color:#000;cursor:hand;background-repeat:no-repeat;background-position:right;}.imagenBtnComprasVentas{cursor:pointer;width:245px !important;border-radius:4px;background-color:#337ab7;color:#fff;cursor:hand;background-repeat:no-repeat;background-position:right;float:right;}.imagenBtnBoletasHonorarios{cursor:pointer;width:260px;border-radius:4px;background-color:#337ab7;color:#fff;cursor:hand;background-repeat:no-repeat;background-position:right;}.imagenBtnAsistentesIndependientes{cursor:pointer;width:200px;border-radius:4px;background-color:#e9e9e9;color:#000;cursor:hand;background-repeat:no-repeat;background-position:right;float:right;}.imagenBtnVolver:hover,.imagenBtnValidar:hover,.imagenBtnGuardar:hover,.imagenBtnLimpiar:hover,.imagenBtnAsistentes:hover,.imagenBtnFormulario:hover,.imagenBtnUpload:hover,.imagenBtnComprasVentas:hover,.imagenBtnBoletasHonorarios:hover,.imagenBtnAsistentesIndependientes:hover{background-color:#002c48 !important;border-color:#002c48 !important;color:#fff;}.imagenBtnLimpiarD{width:140px;background-image:url(images/F29V2/undo.png);background-color:#f3f3f3;background-position:right;background-repeat:no-repeat;border:1px solid #a9a9a9;border-radius:1px 1px 1px 1px;color:#666;display:inline-block;float:left;font:bold 11px/ 17px Helvetica, Arial, sans-serif;height:25px;margin:0 5px;outline:1px none #666;text-decoration:none;text-shadow:0 0 0 #fff;transition:border-color 0.2s ease 0;vertical-align:middle;}.tabla_invisible{visibility:hidden;width:100%;}.invisible{visibility:hidden;}.celda_invisible{visibility:hidden;border-style:none;}.celda_invisible td{border-collapse:collapse;margin:0;visibility:hidden !important;border-style:none !important;}.fila_invisible{visibility:hidden;border-style:none;height:1px;}.fila_display_none{display:none;visibility:hidden;}.fila_invisible td{border-collapse:collapse;margin:0;visibility:hidden !important;border-style:none !important;height:1px;}.fw-campoOculto-izq{background-color:#eee;border-left:1px solid #5a5353;border-right:1px solid #5a5353;border-bottom:1px solid #5a5353;height:16px;padding-left:4px;text-align:left;}.gw-padding-left-10{padding-left:10px;}.gw-padding-left-2{padding-left:2px;}.gw-tabla-ts{border-collapse:collapse;}.gw-tabla-ts td{margin-left:auto;margin-right:auto;border:1px solid #ccc;margin:auto;font-size:10px;}.main-panel{padding-bottom:10px;border-bottom:0.1px;border-left:0.1px;border-right:0.1px;border-top:0.1px;border-style:solid;border-color:#ddd;border-radius:4px;border-collapse:initial;padding-bottom:30px;}.ppmo-rfi-glosa-cell{padding:12px;text-align:center;font-weight:100;}.btn-ingresaaqui{border-style:solid;border-radius:4px;border-width:1px;padding:6px;background-color:#337ab7;color:#fff;text-decoration:none;}.btn-ingresaaqui:hover{background-color:#002c48;color:#fff;text-decoration:none;}.f29v1_cabecera_subtabla_c{margin-left:0;margin-right:0;height:20px;border:1px solid #5a5353;vertical-align:middle;background-color:#d7dbdc;color:black;font-size:11px;font-weight:bold;text-align:center;}.celda-glosa-centro-v1{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background:#d7dbdc;}.celda-codigo-bt-v1{border:1px solid #000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background-color:#d7dbdc !important;color:#000 !important;}.f29_celda_columna_cabecera-v1{margin-left:0;margin-right:0;border-left:1px solid #5a5353;border-bottom:1px solid #5a5353;vertical-align:middle;background-color:#d7dbdc;font-size:11px !important;font-weight:bold;height:25px !important;text-align:center;}.celda-glosa-v1{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;color:#000;font-size:9px !important;font-family:Arial, sans-serif;text-align:left;vertical-align:middle;background:#fff;padding-left:4px;}.f29_cabecera_subtabla_c-v1{margin-left:0;margin-right:0;height:20px;border:1px solid #5a5353;vertical-align:middle;background-color:#d7dbdc;color:black;font-size:11px;font-weight:bold;text-align:center;}.celda-codigo-v1{border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;font-size:9px !important;font-family:Arial, sans-serif;text-align:center;vertical-align:middle;background-color:#d7dbdc !important;color:#000 !important;}.f29_celda_cabecera_izq-v1{margin-left:0;margin-right:0;vertical-align:middle;background-color:#d7dbdc;color:black;font-size:13px;text-indent:25px;font-weight:bold;text-align:justify;}.celda-linea-v1{border-left:1px solid #5a5353;border-bottom:1px solid #5a5353;margin-left:0;margin-right:0;vertical-align:middle;background-color:#d7dbdc;color:#000;font-size:9px !important;text-align:center;}.titulo-tabla-recalculo{background-color:#3a87ad !important;color:#fff;text-align:left;font-size:10pt !important;}</style><script charset="utf-8" src="https://siteintercept.qualtrics.com/dxjsmodule/11.c331591598597e4e3e65.chunk.js?Q_CLIENTVERSION=2.40.0&amp;Q_CLIENTTYPE=web&amp;Q_BRANDID=www4.sii.cl"></script><script charset="utf-8" src="https://siteintercept.qualtrics.com/dxjsmodule/7.22a8f8e4f6c751d8767a.chunk.js?Q_CLIENTVERSION=2.40.0&amp;Q_CLIENTTYPE=web&amp;Q_BRANDID=www4.sii.cl"></script></head>
+<body><nav id="my-menu" style="display:none;" class="mm-menu mm-offcanvas mm-hasnavbar-top-1 mm-hasnavbar-bottom-1"><div class="mm-navbar mm-navbar-bottom mm-navbar-bottom-1 mm-navbar-size-1 mm-navbar-content-2"><a data-target="#mm-0" href="http://homer.sii.cl/" class="mm-next mm-fullsubopen"><i class="fa fa-home" aria-hidden="true"></i> Inicio</a> <a href="#" id="closeMenu"><i class="fa fa-sign-out fa-flip-horizontal" aria-hidden="true"></i> Cerrar</a></div><div class="mm-navbar mm-navbar-top mm-navbar-top-1 mm-navbar-size-1"><div class="mm-search"><input placeholder="Buscar" type="text" autocomplete="off" style=""></div></div><div class="mm-panels"><div class="mm-panel mm-hasnavbar mm-opened mm-current" id="mm-0"><div class="mm-navbar"><a class="mm-title">Menu</a></div><ul class="mm-listview">
+				  <li><a href="https://misiir.sii.cl/cgi_misii/siihome.cgi">Mi Sii</a></li>
+             <li><a class="mm-next mm-fullsubopen" href="#mm-1" data-target="#mm-1"></a><span>Servicios online</span>
+                  
+             </li>
+             <li><a href="https://www.sii.cl/ayudas/">Ayudas</a></li>
+             <li style="padding:0 2px;"><a href="https://www.sii.cl/buscador/buscador.html"><span class="glyphicon glyphicon-search" style="padding: 0;"></span></a></li>
+			</ul><div class="mm-noresultsmsg mm-hidden">No se encontraron resultados.</div></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-1"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-0" data-target="#mm-0"></a><a class="mm-title" href="#mm-0">Servicios online</a></div><ul class="mm-listview">
+						<li><a class="mm-next mm-fullsubopen" href="#mm-2" data-target="#mm-2"></a><span>Clave tributaria, mandatario digital y representantes electrónicos</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-3" data-target="#mm-3"></a><span> RUT, Inicio de Actividades e Inscripción en Registros </span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-4" data-target="#mm-4"></a><span>Actualización de información</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-5" data-target="#mm-5"></a><span>Peticiones administrativas y otras solicitudes</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-6" data-target="#mm-6"></a><span>Autorización de documentos tributarios</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-7" data-target="#mm-7"></a><span>Factura electrónica</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-8" data-target="#mm-8"></a><span>Boleta de ventas y servicios electrónica</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-9" data-target="#mm-9"></a><span>Boletas de honorarios electrónicas</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-10" data-target="#mm-10"></a><span>Libros contables electrónicos</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-11" data-target="#mm-11"></a><span>Impuestos mensuales</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-12" data-target="#mm-12"></a><span>Declaraciones juradas</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-13" data-target="#mm-13"></a><span>Declaración de renta</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-14" data-target="#mm-14"></a><span>Infracciones, pago de giros y condonaciones</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-15" data-target="#mm-15"></a><span>Término de giro</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-16" data-target="#mm-16"></a><span>Situación tributaria</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-17" data-target="#mm-17"></a><span>Herencias</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-18" data-target="#mm-18"></a><span>Avalúos y contribuciones de bienes raíces</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-19" data-target="#mm-19"></a><span>Tasación fiscal de vehículos</span>
+							
+						</li>
+						<li><a class="mm-next mm-fullsubopen" href="#mm-20" data-target="#mm-20"></a><span>Impuesto a aviones, helicópteros, yates y vehículos de alto valor</span>
+							
+						</li>
+                  </ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-2"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Clave tributaria, mandatario digital y representantes electrónicos</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1943-1945.html">Clave tributaria</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1943-4661.html">Mandatario Digital</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1943-1946.html">Representantes electrónicos</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-3"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1"> RUT, Inicio de Actividades e Inscripción en Registros </a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1031-1032.html">Inscripción y obtención de N° de RUT</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1031-1033.html">Cédula RUT electrónica (e-RUT)</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1031-1034.html">Inicio de actividades</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1031-4686.html">Inscripción en registros</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-4"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Actualización de información</a></div><ul class="mm-listview">
+                               <li><a href="https://www4.sii.cl/modificacionesiainternetui/">Actualizar datos de identificación</a></li>
+                               <li><a href="https://www4.sii.cl/modificacioncntrui/#/modificacionactivorelevante">Declarar activos (empresario individual)</a></li>
+                               <li><a href="https://www4.sii.cl/modificacioncntrinternetui/#!/vista-general">Actualizar domicilio</a></li>
+                               <li><a href="https://www4.sii.cl/modificacioncntrinternetui/#!/vista-general">Cambiar/ampliar giro o actividad económica</a></li>
+                               <li><a href="https://www4.sii.cl/modificacioncntrinternetui/#!/vista-general">Agregar/eliminar sucursales</a></li>
+                               <li><a href="https://www4.sii.cl/modificacioncntrui/#/modificacionmail">Cambiar email y/o teléfono móvil</a></li>
+                               <li><a href="https://www4.sii.cl/modificacionesiainternetui/#!/entidad/reorganizacion/seleccionar">Informar reorganizaciones empresariales</a></li>
+                               <li><a href="https://www4.sii.cl/actatributointernetui/#!/asociacionesCulturales">Registro de Asociaciones Culturales</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1125-4370.html">Certificados de inicio de actividades y otros</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1125-4419.html">Registrar datos de contacto asesores de alto patrimonio</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-5"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Peticiones administrativas y otras solicitudes</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1037-1140.html">Peticiones administrativas y otras solicitudes</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-3729.html">Consultas sobre interpretación y aplicación de disposiciones tributarias</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-3604.html">Presentación reposición administrativa voluntaria (RAV) y Recurso Jerárquico</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-1091.html">Regímenes tributarios</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-3582.html">Aviso de venta de vehículos</a></li>
+                               <li><a href="https://www3.sii.cl:443/sispadinternet/index.html">Aviso de liquidación concursal</a></li>
+                               <li><a href="https://www3.sii.cl:443/sispadinternet/index.html">Aviso de extinción de representación o mandato</a></li>
+                               <li><a href="https://www4.sii.cl/gabineteAdmInternet/consulta.html?form=ElusionIngreso">Consultas sobre 26 bis del Código Tributario</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-1111.html">Solicitud de contabilidad computacional</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-1132.html">Dar aviso de pérdida y/o recuperación de cédula de identidad</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1037-1145.html">Certificados a presentar ante Administraciones Tributarias Extranjeras</a></li>
+                               <li><a href="https://www4.sii.cl/siaginternetui/#!/solicitud-raf/">Presentación de revisión de actuación fiscalizadora (RAF)</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-6"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Autorización de documentos tributarios</a></div><ul class="mm-listview">
+                               <li><a href="https://www4.sii.cl/tibvsui/internet/">Solicitar Autorización de Documentos Tributarios</a></li>
+                               <li><a href="https://www4.sii.cl/copiaCertificadosBlobstoreInternet/#consulta">Consultar Certificados Emitidos</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-7"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Factura electrónica</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1039-1182.html">Conozca sobre Factura Electrónica</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-1183.html">Sistema de facturación gratuito del SII</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-1184.html">Sistema de facturación de mercado</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-3256.html">Registro de Compras y Ventas</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-1185.html">Consultas DTE</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-4671.html">Verificación de actividad para emitir facturas</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-3201.html">Registro de Aceptación o Reclamo de un DTE</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1039-1186.html">Consulta de contribuyentes</a></li>
+                               <li><a href="https://www.sii.cl/destacados/factura_electronica/cesion_facturas.html"> Publicación de Facturas</a></li>
+                               <li><a href="https://www3.sii.cl:443/sispadinternet/index.html">Solicitud de folios electrónicos y timbraje de documentos</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-8"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Boleta de ventas y servicios electrónica</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/3532-3810.html">Sistema de emisión de Boletas Electrónicas SII</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/3532-3811.html">Boleta electrónica de mercado</a></li>
+                               <li><a href="https://www4.sii.cl/bolcoreinternetui/#!/home">Consultar validez Boleta Electrónica</a></li>
+                               <li><a href="https://www2.sii.cl/bolcore/">Consultar Contenido Boleta Electrónica</a></li>
+                               <li><a href="https://www4.sii.cl/actatributointernetui/#!/inicio">Declaración de modelo de emisión</a></li>
+                               <li><a href="https://www1.sii.cl/cgi-bin/Portal001/mipeSelEmpresaBol.cgi">Emitir nota de crédito electrónica</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-9"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Boletas de honorarios electrónicas</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1040-1287.html">Emisor de boleta de honorarios</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1040-1309.html">Boleta de prestación de servicios de terceros electrónica</a></li>
+                               <li><a href="https://www4.sii.cl/consultaestadof22ui/#!/validarCertificado">Cotizaciones previsionales</a></li>
+                               <li><a href="https://www4.sii.cl/relacionesriacinternetui/#!/inicio">Mantenedor de Directores S.A.</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-10"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Libros contables electrónicos</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1041-1324.html">Inscripción Libros Contables Electrónicos</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1041-1334.html">Envío de Documentos</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-11"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Impuestos mensuales</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3264.html">Declaración mensual (F29)</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3265.html">Declaración mensual (F50)</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3253.html">Registro de compras y ventas</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3267.html">Asistente para cálculos</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3266.html">Consulta y seguimiento (F29 y F50)</a></li>
+                               <li><a href="https://www4.sii.cl/rfiInternet/?opcionPagina=ConsultaGiros">Consultar y pagar giros</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3640.html">Solicitud de devoluciones</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-3744.html">Impuesto de timbres y estampillas (F24 y F24.1)</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1042-1435.html">Otras aplicaciones y nóminas</a></li>
+                               <li><a href="https://www4.sii.cl/devolucion-anticipada/informacion-beneficios-iva">Beneficio reembolso remanente crédito fiscal IVA</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-12"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Declaraciones juradas</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1043-1451.html">Declaraciones juradas de IVA</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1043-1518.html">Declaraciones juradas de Renta</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1043-1562.html">Declaración jurada de impuesto de timbres y estampilla</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1043-1576.html">Declaraciones juradas de bienes raíces</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1043-1584.html">Registro de inversiones en el extranjero</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1043-4598.html">Declaración jurada extraordinaria de bienes y rentas</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-13"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Declaración de renta</a></div><ul class="mm-listview">
+                               <li><a href="https://www2.sii.cl/navegacionf22/">Declarar Renta (F22)</a></li>
+                               <li><a href="https://www4.sii.cl/pagodiferidoui/internet/">Pago diferido</a></li>
+                               <li><a href="https://alerce.sii.cl/dior_cgi/ren_mp/REN_MenusRenta.cgi?opcion=1">Corregir o rectificar declaración</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1044-2696.html">Consulta y seguimiento</a></li>
+                               <li><a href="https://www2.sii.cl/informacion-f22">Información para Empresas</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1044-2701.html">Asistentes para cálculos</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1044-4520.html">Escritorio contable</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1044-2712.html">Declaración jurada simple de cesión de beneficio de crédito por gastos en educación, art.55ter.</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1044-2718.html">Bonificación ahorro previsional voluntario</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1044-4430.html">Acuerdos Anticipados de Precios de Transferencia (APA)</a></li>
+                               <li><a href="https://www4.sii.cl/devolucion-anticipada/informacion">Anticipo devolución impuesto a la renta año tributario 2020</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-14"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Infracciones, pago de giros y condonaciones</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1045-3212.html">Infracciones</a></li>
+                               <li><a href="https://www2.sii.cl/pagogiro-ui/">Pago de Giros</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-15"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Término de giro</a></div><ul class="mm-listview">
+                               <li><a href="https://www4.sii.cl/sistgiInternet/?opc=dec">Declarar término de giro </a></li>
+                               <li><a href="https://www4.sii.cl/sistgiInternet/?opc=con">Consultar declaración de término de giro </a></li>
+                               <li><a href="https://www4.sii.cl/consultaTGIInternet/">Certificado de término de giro emitidos antes del 08/08/2016</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-16"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Situación tributaria</a></div><ul class="mm-listview">
+                               <li><a href="https://www2.sii.cl/consulta-empleadores/consultar">Consulta para empleadores: Verificar trabajadores que solicitaron préstamo solidario tasa cero</a></li>
+                               <li><a href="https://zeus.sii.cl/cvc/vdc/index.html">Consultar timbraje de documentos</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1047-1690.html">Consultar y revisar situación tributaria</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1047-1702.html">Carpeta tributaria electrónica</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1047-1714.html">Nóminas</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-17"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Herencias</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/3140-4383.html">Impuestos a las herencias y donaciones</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/3140-4384.html">Compañías de seguros</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-18"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Avalúos y contribuciones de bienes raíces</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1048-4544.html">Mis bienes raíces (información integrada)</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1048-4504.html">Ingresar solicitud de bienes raíces</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1048-2569.html">Consultar Reavalúos y ROL semestral de contribuciones</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1048-3661.html">Consultar beneficio del adulto mayor</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1048-3657.html">Consultar sobretasa de bienes raíces</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1048-2623.html">Pagar Contribuciones y obtener certificados de avalúo y antecedentes para terceros</a></li>
+                               <li><a href="https://www4.sii.cl/enajenacionesui/">Consultar transferencia de bienes raíces</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1048-2573.html">Ingresar declaraciones de bienes raíces</a></li>
+                               <li><a href="https://www.sii.cl/sitios_de_interes/aplicaciones_para_entidades_externas.html">Aplicaciones para entidades externas</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-19"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Tasación fiscal de vehículos</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/1049-3526.html">Consulta tasación de vehículos</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1049-2612.html">Tasación de vehículos (bajada de datos)</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1049-2618.html">Impuesto a emisiones contaminantes vehículos nuevos</a></li>
+                               <li><a href="https://www.sii.cl/destacados/tasacion_vehiculos/2024/normativa_vigente.html">Normativa vigente</a></li>
+                               <li><a href="https://www.sii.cl/servicios_online/1049-3137.html">Declaración de Vehículos Motorizados</a></li>
+							</ul></div><div class="mm-panel mm-hasnavbar mm-hidden" id="mm-20"><div class="mm-navbar"><a class="mm-btn mm-prev" href="#mm-1" data-target="#mm-1"></a><a class="mm-title" href="#mm-1">Impuesto a aviones, helicópteros, yates y vehículos de alto valor</a></div><ul class="mm-listview">
+                               <li><a href="https://www.sii.cl/servicios_online/4485-.html">Consulta, solicitudes y pago</a></li>
+							</ul></div></div></nav>
+<script type="text/javascript" src="https://zeusr.sii.cl/admin/responsive_barranav.js"></script><link href="https://zeusr.sii.cl/admin/responsive/css/bootstrap-sii.min.css" rel="stylesheet">
+<link href="https://zeusr.sii.cl/admin/responsive/css/general.css" rel="stylesheet">
+<link href="https://zeusr.sii.cl/admin/responsive/css/estilos.css" rel="stylesheet">
+
+
+
+    <div id="my-wrapper" class="mm-page mm-slideout">
+
+
+        <!-- CABECERAS -->
+        <div id="headerRfi">
+        <script type="text/javascript">
+            mostrar("|Declarar y Pagar F29");
+        </script><!-- CABECERA MOVIL-->
+
+<!-- FIN CABECERA MOVIL-->
+<!-- CABECERA DESKTOP-->
+<div class="web-sii cabecera hidden-xs">
+	<div class="header">
+		<nav class="navbar navbar-primary">
+			<div class="container">
+				<!-- MENU OPCIONES -->
+				<div id="opciones" class="navbar-collapse collapse" aria-expanded="false">
+					<ul class="nav navbar-nav" style="display: none;" id="sinAutenticacion">
+					   <li class="special"> <a href="https://misiir.sii.cl/cgi_misii/siihome.cgi">Ingresar a Mi Sii</a></li>
+					</ul>
+					<ul class="nav navbar-nav usuario" style="display: block;" id="conAutenticacion">
+					   <li>
+					      <span class="id">
+					         <script>imprimeRutEncabezado();</script>Rut: 25723649-8<br>
+					         <span id="lastConexion">Ultima visita 06/01/2026, a las 18:23:28 horas</span>
+					      </span>
+					   </li>
+					</ul>
+         			<span class="nav navbar-nav navbar-right hidden-xs" id="cerrar-sesion" style="display: block;">
+                       <script>imprimeCerrarSesion();</script><a href="https://zeusr.sii.cl/cgi_AUT2000/autTermino.cgi">Cerrar Sesión</a>
+                    </span>
+				</div>
+			</div>
+		</nav>
+		<div class="container">
+			<h1 class="pull-left hidden-xs logo"><a href="https://homer.sii.cl/" title="Sii - Servicio de impuestos internos"><img src="https://zeusr.sii.cl/admin/responsive/images/logo.jpg" alt="Sii - Servicio de impuestos internos"></a></h1>
+			<!-- MENU DESKTOP -->
+			<ul class="dropdown nav navbar-nav hidden-xs" id="main-menu">
+				<li style="padding-top: 2px;"><a role="button" href="https://misiir.sii.cl/cgi_misii/siihome.cgi">Mi Sii</a></li>
+   <li class="dropdown"><a href="https://www.sii.cl/servicios_online/">Servicios online <i class="fa fa-caret-down" aria-hidden="true"></i></a>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+						<li><a href="https://www.sii.cl/servicios_online/1943-.html">Clave tributaria, mandatario digital y representantes electrónicos</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1031-.html"> RUT, Inicio de Actividades e Inscripción en Registros </a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1125-.html">Actualización de información</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1037-.html">Peticiones administrativas y otras solicitudes</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/3598-.html">Autorización de documentos tributarios</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1039-.html">Factura electrónica</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/3532-.html">Boleta de ventas y servicios electrónica</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1040-.html">Boletas de honorarios electrónicas</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1041-.html">Libros contables electrónicos</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1042-.html">Impuestos mensuales</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1043-.html">Declaraciones juradas</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1044-.html">Declaración de renta</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1045-.html">Infracciones, pago de giros y condonaciones</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1046-.html">Término de giro</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1047-.html">Situación tributaria</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/3140-.html">Herencias</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1048-.html">Avalúos y contribuciones de bienes raíces</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/1049-.html">Tasación fiscal de vehículos</a></li>
+						<li><a href="https://www.sii.cl/servicios_online/4485-.html">Impuesto a aviones, helicópteros, yates y vehículos de alto valor</a></li>
+                  </ul>
+             </li>
+				<li style="padding-top: 2px;"><a role="button" class="#" data-target="#" href="https://www.sii.cl/ayudas/">Ayudas</a></li>
+				<li style="padding-left: 4px;"><a href="https://www.sii.cl/buscador/buscador.html" alt="Buscar" title="Buscar"><span class="glyphicon glyphicon-search"></span></a></li>
+			</ul>
+			<!-- FIN MENU DESKTOP --> 
+		</div>
+        <!-- RASTRO MIGA -->
+        <div class="container">
+           <ol class="breadcrumb" id="miga"><li><a href="https://homer.sii.cl/">Home</a></li><li class="active">Declarar y Pagar F29</li>
+</ol>
+        </div>
+        <!-- FIN RASTRO MIGA -->
+	</div>
+</div>
+<!-- FIN CABECERA DESKTOP -->
+
+        </div>
+        <!-- FIN CABECERAS-->
+
+        <!-- CUERPO -->
+        <div class="web-sii cuerpo">
+
+        </div>
+    <iframe id="__printingFrame" style="width:0;height:0;border:0">
+        <style type="text/css">
+            body,td {
+                font-family: Verdana, Arial, Helvetica, sans-serif;
+                font-size: 11px;
+            }
+        </style>
+    </iframe>
+    <iframe src="javascript:''" id="gwt_historyFrame" style="width: 0; height: 0; border: 0"></iframe>
+    <div id="contenedor">
+        <div id="usuario"></div>
+        <div id="main"><table cellspacing="0" cellpadding="0" style="width: 100%;"><tbody></tbody></table></div>
+    </div>
+    <div id="glassRfi" style=""></div>       
+        <!-- FIN CUERPO --> 
+        <!-- Inicio Div Pie de Pagina ty crga de framework-->
+        <div id="footerRfi">
+	       <script type="text/javascript">mostrarPie()</script><div class="web-sii pie">
+  <footer>
+    <div class="container">
+      <div class="row hidden-xs">
+        <div class="col-sm-12 col-md-2-5">
+           <h3 class="hidden-xs">Valores y fechas</h3>
+           <div class="btn btn-block navbar-toggle hidden-sm hidden-md hidden-lg arrow-click" data-target=".pie01" data-toggle="collapse"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Valores y fechas</div>
+           <ul class="list-unstyled collapse navbar-collapse pie01">
+                               <li><a href="https://www.sii.cl/valores_y_fechas/uf/uf2026.htm">UF</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/dolar/dolar2026.htm">Dólar</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/utm/utm2026.htm">UTM-UTA-IPC</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/renta/datos_valores_renta.html">Datos y valores de Renta</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/iva/datos_valores_iva.html">Datos y valores de IVA</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/otros_valores/otros_valores.html">Otros valores</a></li>
+           </ul>
+        </div>
+        <div class="col-sm-12 col-md-2-5">
+           <h3 class="hidden-xs">Normativa y legislación</h3>
+           <div class="btn btn-block navbar-toggle hidden-sm hidden-md hidden-lg arrow-click" data-target=".pie02" data-toggle="collapse"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Normativa y legislación</div>
+           <ul class="list-unstyled collapse navbar-collapse pie02">
+                               <li><a href="https://www.sii.cl/normativa_legislacion/circulares/2025/indcir2025.htm">Circulares</a></li>
+                               <li><a href="https://www.sii.cl/normativa_legislacion/resoluciones/2026/res_ind2026.htm">Resoluciones</a></li>
+                               <li><a href="https://www4.sii.cl/consultaProyectosNormativosInternet/#Inicio">Consulta pública de normas</a></li>
+                               <li><a href="https://www3.sii.cl/normaInternet/">Administrador de contenido normativo</a></li>
+                               <li><a href="https://www4.sii.cl/acjui/internet/#/instancia/1">Administrador de contenido de Jurisprudencia</a></li>
+                               <li><a href="https://www.sii.cl/normativa_legislacion/legislacion_tributaria.html">Legislación tributaria y convenios internacionales</a></li>
+                               <li><a href="https://www.sii.cl/normativa_legislacion/jurisprudencia_y_tribunales.html">Jurisprudencia y tribunales</a></li>
+           </ul>
+        </div>
+        <div class="col-sm-12 col-md-2-5">
+           <h3 class="hidden-xs">Redes Sociales y APPs</h3>
+           <div class="btn btn-block navbar-toggle hidden-sm hidden-md hidden-lg arrow-click" data-target=".pie03" data-toggle="collapse"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Redes Sociales y APPs</div>
+           <ul class="list-unstyled collapse navbar-collapse pie03">
+                               <li><a href="https://www.instagram.com/sii_chile/?hl=es">Instagram</a></li>
+                               <li><a href="https://cl.linkedin.com/company/servicio-de-impuestos-internos">LinkedIn</a></li>
+                               <li><a href="https://x.com/SII_Chile/">X</a></li>
+                               <li><a href="https://www.facebook.com/impuestosinternoschile/">Facebook</a></li>
+                               <li><a href="https://www.youtube.com/user/sii/">Youtube</a></li>
+                               <li><a href="https://www.sii.cl/ayudas/apps/">APPs</a></li>
+                               <li><a href="https://www.sii.cl/redes_sociales/rss.html">RSS</a></li>
+           </ul>
+        </div>
+        <div class="col-sm-12 col-md-2-5">
+           <h3 class="hidden-xs">Sitios de interés</h3>
+           <div class="btn btn-block navbar-toggle hidden-sm hidden-md hidden-lg arrow-click" data-target=".pie04" data-toggle="collapse"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Sitios de interés</div>
+           <ul class="list-unstyled collapse navbar-collapse pie04">
+                               <li><a href="https://www.sii.cl/sitios_de_interes/sinteres_appdoc.html">Aplicaciones y documentos</a></li>
+                               <li><a href="https://www.mercadopublico.cl/Portal/FeedOrg.aspx?qs=uA+9eO9RsExrBBji2XDfuw==">Licitaciones del SII</a></li>
+                               <li><a href="https://www.sii.cl/sitios_de_interes/sinteres_sgob.html">Sitios de gobierno relacionados</a></li>
+                               <li><a href="https://www.sii.cl/sitios_de_interes/sinteres_orgrelacionados.html">Organismos relacionados</a></li>
+                               <li><a href="https://www.sii.cl/asuntos_internacionales/">Intercambios de Información - Estándar CRS</a></li>
+           </ul>
+        </div>
+        <div class="col-sm-12 col-md-2-5">
+           <h3 class="hidden-xs">Sobre el SII</h3>
+           <div class="btn btn-block navbar-toggle hidden-sm hidden-md hidden-lg arrow-click" data-target=".pie05" data-toggle="collapse"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Sobre el SII</div>
+           <ul class="list-unstyled collapse navbar-collapse pie05">
+                               <li><a href="https://www.sii.cl/sobre_el_sii/nuestro_servicio.htm">Nuestro Servicio</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/trabaja_con_nosotros.html">Trabaja con nosotros</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/gestion_y_estadisticas.html">Gestión y estadísticas</a></li>
+                               <li><a href="https://capacita.sii.cl:433/">CFiT Virtual</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/derechos_contribuyentes.htm">Derechos de los contribuyentes</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/terminos_sitio_web.html">Términos de uso del sitio web</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/declaracion_de_privacidad.html">Declaración de Privacidad</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/recomendaciones_seguridad.htm">Recomendaciones de seguridad</a></li>
+           </ul>
+        </div>
+      </div>
+      <div class="row visible-xs">
+         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+              <div class="panel panel-default">
+                 <div class="panel-heading" role="tab" id="heading01">
+                    <h4 class="panel-title">
+                       <a class="arrow-click collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse01" aria-expanded="true" aria-controls="collapse01"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Valores y fechas</a>
+                    </h4>
+                 </div>
+                 <div id="collapse01" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading01">
+                    <div class="panel-body">
+                       <ul class="list-unstyled">
+                               <li><a href="https://www.sii.cl/valores_y_fechas/uf/uf2026.htm">UF</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/dolar/dolar2026.htm">Dólar</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/utm/utm2026.htm">UTM-UTA-IPC</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/renta/datos_valores_renta.html">Datos y valores de Renta</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/iva/datos_valores_iva.html">Datos y valores de IVA</a></li>
+                               <li><a href="https://www.sii.cl/valores_y_fechas/otros_valores/otros_valores.html">Otros valores</a></li>
+                       </ul>
+                    </div>
+                 </div>
+              </div>
+              <div class="panel panel-default">
+                 <div class="panel-heading" role="tab" id="heading02">
+                    <h4 class="panel-title">
+                       <a class="arrow-click collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse02" aria-expanded="true" aria-controls="collapse02"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Normativa y legislación</a>
+                    </h4>
+                 </div>
+                 <div id="collapse02" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading02">
+                    <div class="panel-body">
+                       <ul class="list-unstyled">
+                               <li><a href="https://www.sii.cl/normativa_legislacion/circulares/2025/indcir2025.htm">Circulares</a></li>
+                               <li><a href="https://www.sii.cl/normativa_legislacion/resoluciones/2026/res_ind2026.htm">Resoluciones</a></li>
+                               <li><a href="https://www4.sii.cl/consultaProyectosNormativosInternet/#Inicio">Consulta pública de normas</a></li>
+                               <li><a href="https://www3.sii.cl/normaInternet/">Administrador de contenido normativo</a></li>
+                               <li><a href="https://www4.sii.cl/acjui/internet/#/instancia/1">Administrador de contenido de Jurisprudencia</a></li>
+                               <li><a href="https://www.sii.cl/normativa_legislacion/legislacion_tributaria.html">Legislación tributaria y convenios internacionales</a></li>
+                               <li><a href="https://www.sii.cl/normativa_legislacion/jurisprudencia_y_tribunales.html">Jurisprudencia y tribunales</a></li>
+                       </ul>
+                    </div>
+                 </div>
+              </div>
+              <div class="panel panel-default">
+                 <div class="panel-heading" role="tab" id="heading03">
+                    <h4 class="panel-title">
+                       <a class="arrow-click collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse03" aria-expanded="true" aria-controls="collapse03"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Redes Sociales y APPs</a>
+                    </h4>
+                 </div>
+                 <div id="collapse03" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading03">
+                    <div class="panel-body">
+                       <ul class="list-unstyled">
+                               <li><a href="https://www.instagram.com/sii_chile/?hl=es">Instagram</a></li>
+                               <li><a href="https://cl.linkedin.com/company/servicio-de-impuestos-internos">LinkedIn</a></li>
+                               <li><a href="https://x.com/SII_Chile/">X</a></li>
+                               <li><a href="https://www.facebook.com/impuestosinternoschile/">Facebook</a></li>
+                               <li><a href="https://www.youtube.com/user/sii/">Youtube</a></li>
+                               <li><a href="https://www.sii.cl/ayudas/apps/">APPs</a></li>
+                               <li><a href="https://www.sii.cl/redes_sociales/rss.html">RSS</a></li>
+                       </ul>
+                    </div>
+                 </div>
+              </div>
+              <div class="panel panel-default">
+                 <div class="panel-heading" role="tab" id="heading04">
+                    <h4 class="panel-title">
+                       <a class="arrow-click collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse04" aria-expanded="true" aria-controls="collapse04"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Sitios de interés</a>
+                    </h4>
+                 </div>
+                 <div id="collapse04" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading04">
+                    <div class="panel-body">
+                       <ul class="list-unstyled">
+                               <li><a href="https://www.sii.cl/sitios_de_interes/sinteres_appdoc.html">Aplicaciones y documentos</a></li>
+                               <li><a href="https://www.mercadopublico.cl/Portal/FeedOrg.aspx?qs=uA+9eO9RsExrBBji2XDfuw==">Licitaciones del SII</a></li>
+                               <li><a href="https://www.sii.cl/sitios_de_interes/sinteres_sgob.html">Sitios de gobierno relacionados</a></li>
+                               <li><a href="https://www.sii.cl/sitios_de_interes/sinteres_orgrelacionados.html">Organismos relacionados</a></li>
+                               <li><a href="https://www.sii.cl/asuntos_internacionales/">Intercambios de Información - Estándar CRS</a></li>
+                       </ul>
+                    </div>
+                 </div>
+              </div>
+              <div class="panel panel-default">
+                 <div class="panel-heading" role="tab" id="heading05">
+                    <h4 class="panel-title">
+                       <a class="arrow-click collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse05" aria-expanded="true" aria-controls="collapse05"><span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>Sobre el SII</a>
+                    </h4>
+                 </div>
+                 <div id="collapse05" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading05">
+                    <div class="panel-body">
+                       <ul class="list-unstyled">
+                               <li><a href="https://www.sii.cl/sobre_el_sii/nuestro_servicio.htm">Nuestro Servicio</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/trabaja_con_nosotros.html">Trabaja con nosotros</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/gestion_y_estadisticas.html">Gestión y estadísticas</a></li>
+                               <li><a href="https://capacita.sii.cl:433/">CFiT Virtual</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/derechos_contribuyentes.htm">Derechos de los contribuyentes</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/terminos_sitio_web.html">Términos de uso del sitio web</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/declaracion_de_privacidad.html">Declaración de Privacidad</a></li>
+                               <li><a href="https://www.sii.cl/sobre_el_sii/recomendaciones_seguridad.htm">Recomendaciones de seguridad</a></li>
+                       </ul>
+                    </div>
+                 </div>
+              </div>
+         </div>
+      </div>
+    </div>
+  </footer>
+</div>
+<script src="https://zeusr.sii.cl/admin/responsive/js/general.js"></script>
+<script src="https://zeusr.sii.cl/admin/responsive/js/functions.js"></script>
+<script src="https://zeusr.sii.cl/admin/js/encuestas.js"></script>
+
+	     </div> 
+        <!-- Fin Div Pie de Pagina -->        
+    </div>
+
+<iframe src="javascript:''" id="rfi" tabindex="-1" style="position: absolute; width: 0px; height: 0px; border: none;"></iframe><div id="mm-blocker" class="mm-slideout"></div><div class="web-sii cabecera hidden-sm hidden-md hidden-lg mm-slideout">
+	<div class="header">
+		<nav class="navbar navbar-primary">
+			<div class="container"> 
+				<!-- BOTONES MOVIL -->
+				<div class="navbar-header">
+					<button class="navbar-toggle pull-left" type="button" id="abrirMenu"> <span class="sr-only">Mostrar menu</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+					<h1 class="hidden-sm hidden-md hidden-lg"><a href="https://homer.sii.cl/" title="Sii - Servicio de impuestos internos"><img src="https://zeusr.sii.cl/admin/responsive/images/logo.jpg" alt="Sii - Servicio de impuestos internos"></a></h1>
+					<button aria-expanded="false" data-target="#opciones_movil" data-toggle="collapse" class="navbar-toggle collapsed" type="button"><span aria-hidden="true" class="glyphicon glyphicon-user"></span></button>
+					<div class="border"></div>
+				</div>
+				<!-- MENU OPCIONES -->
+				<div id="opciones_movil" class="navbar-collapse collapse" aria-expanded="false">
+					<ul class="nav navbar-nav" style="display: none;" id="sinAutenticacionMovil">
+						<li class="special"> <a href="https://misiir.sii.cl/cgi_misii/siihome.cgi">Ingresar a Mi Sii</a></li>
+					</ul>
+					<ul class="nav navbar-nav usuario" style="display: block;" id="conAutenticacionMovil">
+					   <li>
+					      <span class="id">
+					         <script>imprimeRutEncabezadoMovil();</script>Rut: 25723649-8 &nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://zeusr.sii.cl/cgi_AUT2000/autTermino.cgi">Cerrar Sesión</a><br>
+					         <span id="lastConexionMovil">Ultima visita 06/01/2026, a las 18:23:28 horas</span>
+					      </span>
+					   </li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<!-- MENU MOVIL -->
+		
+		<!-- FIN MENU MOVIL --> 
+	</div>
+</div><script type="text/javascript" src="https://zn7apd3ds8wfwx8xl-siichile.siteintercept.qualtrics.com/SIE/?Q_ZID=ZN_7apD3Ds8WFWx8XL"></script><div id="ZN_7apD3Ds8WFWx8XL"></div></body></html>
