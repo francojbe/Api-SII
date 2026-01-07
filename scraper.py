@@ -797,6 +797,26 @@ class SIIScraper:
                                             }}
                                         }}
                                     }}
+                                    // ESTRATEGIA 3: Estructura de Tabla Simple (TD con código -> Sibling TD con valor)
+                                    // Común en vistas de resumen/propuesta
+                                    const tds = Array.from(document.querySelectorAll('td'));
+                                    // Buscamos celda que tenga el código (ej: "538" o "[538]")
+                                    const codeTd = tds.find(td => td.innerText.includes('[' + c + ']') || td.innerText.trim() == c);
+
+                                    if (codeTd) {{
+                                        // Buscar en las celdas siguientes de la misma fila
+                                        let sibling = codeTd.nextElementSibling;
+                                        while (sibling) {{
+                                            const txt = sibling.innerText;
+                                            // Si tiene un número y NO es solo el código (evitar falsos positivos si el código se repite)
+                                            // Y es suficientemente largo o tiene formato moneda
+                                            if (cleanNum(txt) && cleanNum(txt) != c) {{
+                                                return txt;
+                                            }}
+                                            sibling = sibling.nextElementSibling;
+                                        }}
+                                    }}
+                                    
                                     return null;
                                 }}""", cod)
 
