@@ -130,22 +130,26 @@ async def run_final_submission(scraper, websocket, banco):
 
 async def run_live_scout(scraper, websocket, mes=None, anio=None):
     try:
-        # Ejecutamos la navegación compleja
-        result = await scraper.navigate_to_f29_from_home(mes, anio)
+        # 1. Ejecutamos la navegación del F29 (Propuesta)
+        result_f29 = await scraper.navigate_to_f29_from_home(mes, anio)
         
-        if result:
+        # 2. Cruce de datos con el Registro de Compras (RCV) para detectar facturas pendientes
+        # Esto es el "Siguiente Nivel"
+        rcv_data = await scraper.check_pending_rcv(mes, anio)
+        
+        if result_f29:
              # GUARDAR CONTEXTO PARA EL CHAT POST-EJECUCIÓN
-             rut_limpio = scraper.rut  # Asegurarnos de tener el RUT
+             rut_limpio = scraper.rut
              
-             # Simulamos un scouting básico si no tenemos datos reales aún
-             # Idealmente navigate_to_f29_from_home debería devolver los datos extraídos
-             # Usar datos reales del scraper si devolvió un diccionario
-             scouting_data = result if isinstance(result, dict) else {
+             # Consolidar datos para la IA
+             scouting_data = result_f29 if isinstance(result_f29, dict) else {
                  "resumen": "Navegación en vivo completada exitosamente.",
                  "estado": "Formulario F29 accedido",
                  "rut": rut_limpio,
                  "datos": {}
              }
+             # Inyectar datos del RCV en el scouting
+             scouting_data["rcv_pendientes"] = rcv_data if rcv_data else {"total_pendientes": 0, "iva_pendiente": 0}
              
              # Obtener el análisis de la IA automáticamente
              await manager.send_personal_message({"type": "log", "text": "🤖 Solicitando análisis al Auditor IA...", "log_type": "info"}, websocket)
@@ -153,11 +157,17 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
              
              # Prompt enriquecido con los datos extraídos para el chat posterior
              datos_txt = json.dumps(scouting_data.get('datos', {}), indent=2)
+             rcv_txt = json.dumps(scouting_data.get('rcv_pendientes', {}), indent=2)
+             
              sys_prompt = f"""Eres un Auditor Tributario de nivel SaaS Contable. Acabas de realizar una nevegación EN VIVO para el RUT {rut_limpio}.
-             Se extrajeron los siguientes datos:
+             Se extrajeron los siguientes datos del F29:
              {datos_txt}
              
-             Usa estos valores para el chat. Si el usuario pregunta qué hacer, guíalo según el análisis previo:
+             Y estos datos del Registro de Compras (RCV):
+             {rcv_txt}
+             
+             Usa estos valores para el chat. Si ves facturas pendientes en el RCV, advierte que se está perdiendo IVA crédito.
+             Si el usuario pregunta qué hacer, guíalo según el análisis previo:
              {analisis_ia}
              """
              

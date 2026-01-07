@@ -882,3 +882,81 @@ class SIIScraper:
         except Exception as e:
             await self.log(f"Error en el envío: {e}", "error")
             return False
+
+    async def check_pending_rcv(self, mes=None, anio=None):
+        """
+        Navega al Registro de Compras y Ventas (RCV) para detectar facturas pendientes.
+        """
+        page = await self._ensure_session()
+        hoy = datetime.now()
+        
+        # Normalizar mes y año
+        if mes and mes.isdigit():
+            mes_str = mes.zfill(2)
+        else:
+            mes_str = str(hoy.month).zfill(2)
+            
+        anio_str = str(anio) if anio else str(hoy.year)
+
+        try:
+            await self.log(f"Cruzando datos con el RCV para {mes_str}/{anio_str} (Buscando facturas sin acuse)...")
+            await page.goto("https://www4.sii.cl/consdcvinternetui/#/index", wait_until="networkidle")
+            
+            await page.wait_for_selector("#periodoMes", timeout=10000)
+            
+            # Seleccionar Año y Mes
+            selects = page.locator("select")
+            await selects.nth(2).select_option(label=anio_str)
+            await page.select_option("#periodoMes", value=mes_str)
+            
+            # Click en Consultar
+            await page.locator("button:has-text('Consultar')").click()
+            await asyncio.sleep(3)
+            await page.wait_for_load_state("networkidle")
+
+            # Click en la pestaña 'Pendiente' (Facturas que no han dado acuse)
+            # El selector puede variar, probamos con texto y href
+            tab_pendiente = page.locator("a:has-text('Pendiente')").or_(page.locator("a[href*='pendiente']"))
+            if await tab_pendiente.count() > 0:
+                await tab_pendiente.first.click()
+                await asyncio.sleep(2)
+                await page.wait_for_load_state("networkidle")
+                
+                # Extraer facturas pendientes
+                pendientes = await page.evaluate("""() => {
+                    const rows = Array.from(document.querySelectorAll('table tbody tr'));
+                    return rows.map(row => {
+                        const cols = row.querySelectorAll('td');
+                        if (cols.length >= 6) {
+                            return {
+                                tipo: cols[0].innerText.trim(),
+                                cantidad: parseInt(cols[1].innerText.trim()) || 0,
+                                neto: parseInt(cols[3].innerText.trim().replace(/[^0-9]/g, '')) || 0,
+                                iva: parseInt(cols[4].innerText.trim().replace(/[^0-9]/g, '')) || 0
+                            };
+                        }
+                        return null;
+                    }).filter(r => r !== null);
+                }""")
+                
+                total_iva_pendiente = sum(p['iva'] for p in pendientes)
+                total_cantidad = sum(p['cantidad'] for p in pendientes)
+                
+                if total_cantidad > 0:
+                    await self.log(f"⚠️ ALERTA CONTABLE: {total_cantidad} facturas están PENDIENTES de acuse.")
+                    await self.log(f"💰 Se están perdiendo ${total_iva_pendiente:,} en IVA Crédito por no aceptarlas.")
+                else:
+                    await self.log("✅ Excelente: No hay facturas pendientes en el RCV.")
+                
+                return {
+                    "total_pendientes": total_cantidad,
+                    "iva_pendiente": total_iva_pendiente,
+                    "detalle": pendientes
+                }
+            else:
+                await self.log("No se encontró la sección de facturas pendientes (esto suele significar que no hay).")
+                return {"total_pendientes": 0, "iva_pendiente": 0}
+
+        except Exception as e:
+            await self.log(f"Error revisando RCV: {e}", "error")
+            return None

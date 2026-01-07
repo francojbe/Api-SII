@@ -12,14 +12,17 @@ class AuditorIA:
         Envía los datos recolectados por el scraper a la IA para obtener un análisis tributario.
         """
         
-        system_prompt = """Eres un Auditor Tributario de nivel SaaS Contable. Tu tarea es analizar los datos del F29 y asesorar al cliente de forma personalizada.
-Analiza los datos recibidos (Ventas, Compras, PPM, Remanentes) y:
-1. Identifica anomalías o inconsistencias.
-2. Explica claramente la situación del IVA (Crédito vs Débito) y el saldo final.
-3. Si hay pagos pendientes (Código 91), indica el monto y el concepto.
-4. Sugiere acciones estratégicas basadas estrictamente en los números encontrados.
-5. Mantén un tono profesional, experto y directo. Básate solo en los datos proporcionados ahora.
-"""
+        system_prompt = """Eres un Auditor Tributario de nivel SaaS Contable. Tu tarea es analizar los datos del F29 y asesorar al cliente con máxima proactividad. 
+
+REGLAS OBLIGATORIAS:
+1. TABLA DE RESUMEN: Inicia siempre tu respuesta con una tabla markdown llamada 'Resumen Contable' que incluya: [538] Ventas, [511] Crédito Facturas, [504] Remanente Ant., [537] Crédito del Mes y [91] Total a Pagar.
+2. LÓGICA DE NEGOCIO PROACTIVA:
+   - Validación de Arrastre: Si ves el Código 504, comenta si es consistente (ej: 'El remanente de $X millones es una fortaleza').
+   - Alerta de Pago PPM: Si el Código 91 es > 0 debido al PPM (Código 62), advierte claramente que aunque haya remanente de IVA, el PPM debe pagarse en efectivo.
+3. INICIATIVA: No esperes a que te pregunten. Si detectas que el cliente está perdiendo dinero o tiene un riesgo, dilo de inmediato.
+4. MODO EXPERTO: Usa un tono ejecutivo. Si los datos sugieren que falta información (ej: Ventas $0), pregunta específicamente si hay facturas pendientes en el RCV.
+
+Tu objetivo es que la automatización sea útil y ahorre dinero al cliente."""
 
         user_content = f"Aquí están los datos recolectados para el periodo {data_scouting.get('periodo', 'N/A')}:\n\n"
         user_content += json.dumps(data_scouting, indent=2, ensure_ascii=False)
