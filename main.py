@@ -177,22 +177,26 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
                  "last_analysis": analisis_ia
              }
 
-             await manager.send_personal_message({
-                "type": "log",
-                "text": "✅ Proceso finalizado con éxito.",
-                "log_type": "success",
-                "payload": {
-                    "scouting": scouting_data,
-                    "analisis_ia": analisis_ia
-                }
-            }, websocket)
-
-             # ENVIAR EL ANÁLISIS COMO MENSAJE DE CHAT (Para que aparezca en el globo)
-             await manager.send_personal_message({
-                 "type": "chat",
-                 "text": analisis_ia,
-                 "sender": "ai"
+              await manager.send_personal_message({
+                 "type": "log",
+                 "text": "✅ Auditoría de Agente Proactivo completada con éxito.",
+                 "log_type": "success",
+                 "payload": {
+                     "scouting": scouting_data,
+                     "analisis_ia": analisis_ia
+                 }
              }, websocket)
+
+              # ENVIAR EL ANÁLISIS COMO MENSAJE DE CHAT (Para que aparezca en el globo)
+              # Usamos múltiples campos para asegurar compatibilidad con el frontend
+              await manager.send_personal_message({
+                  "type": "chat",
+                  "text": analisis_ia,
+                  "message": analisis_ia,
+                  "reply": analisis_ia,
+                  "content": analisis_ia,
+                  "sender": "ai"
+              }, websocket)
              # Aquí podríamos enviar los datos finales si los tuviéramos
         else:
              await manager.send_personal_message({
