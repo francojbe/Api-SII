@@ -167,7 +167,7 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
              {rcv_txt}
              
              Usa estos valores para el chat. Si ves facturas pendientes en el RCV, advierte que se estÃ¡ perdiendo IVA crÃ©dito.
-             Si el usuario pregunta quÃ© hacer, guÃ­alo segÃºn el anÃ¡lisis previo:
+             Si el usuario pregunta qué hacer, guíalo según el análisis previo:
              {analisis_ia}
              """
              
@@ -180,7 +180,7 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
 
              await manager.send_personal_message({
                  "type": "log",
-                 "text": "âœ… AuditorÃ­a de Agente Proactivo completada con Ã©xito.",
+                 "text": "✅ Auditoría de Agente Proactivo completada con éxito.",
                  "log_type": "success",
                  "payload": {
                      "scouting": scouting_data,
