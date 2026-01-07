@@ -582,262 +582,262 @@ class SIIScraper:
             if "portal.sii.cl" not in page.url and "rfiInternet" not in page.url:
                 await self._login(page)
 
+            # 2. Esperar a la Home
+            await self.log("Esperando panel de alertas...")
+            await page.wait_for_selector("text=Responsabilidades Tributarias", timeout=20000)
+            
+            # 3. Asegurar que 'Declaraciones' esté seleccionado
+            await self.log("Seleccionando pestaña 'Declaraciones'...")
+            await page.wait_for_load_state("networkidle")
+            # Selector más robusto para la pestaña Declaraciones
+            try:
+                await page.click("text=/^\\s*Declaraciones\\s*$/", timeout=5000)
+            except:
+                await self.log("No se pudo hacer clic exacto en 'Declaraciones', intentando alternativa...")
+                await page.click("div:has-text('Declaraciones')")
+            await asyncio.sleep(2)
+
+            # 4. Buscar el ítem de F29 y hacer clic para expandir
+            await self.log("Buscando sección de F29...")
+            await page.click("text=Declaración de IVA, impuestos mensuales (F29)")
+            await asyncio.sleep(3)
+
+            # 5. Buscar la fila del periodo objetivo o el más reciente pendiente
+            periodo_objetivo = f"{mes} {anio}" if mes and anio else None
+            
+            if periodo_objetivo:
+                await self.log(f"Buscando periodo específico: {periodo_objetivo}...")
+                fila_target = page.locator("tr").filter(has_text=periodo_objetivo).filter(has_text="Pendiente")
+            else:
+                await self.log("Buscando el periodo pendiente más reciente...")
+                # Tomamos la primera fila que tenga el texto 'Pendiente' dentro de la sección de F29
+                fila_target = page.locator("tr:has-text('Pendiente')").first
+            
+            if await fila_target.count() > 0:
+                texto_periodo = await fila_target.locator("td").first.inner_text()
+                await self.log(f"Periodo detectado: {texto_periodo.strip()} ✅")
                 
-                # 2. Esperar a la Home
-                await self.log("Esperando panel de alertas...")
-                await page.wait_for_selector("text=Responsabilidades Tributarias", timeout=20000)
+                # El botón 'Pendiente' suele ser el link
+                btn_pendiente = fila_target.locator("text=Pendiente")
                 
-                # 3. Asegurar que 'Declaraciones' esté seleccionado
-                await self.log("Seleccionando pestaña 'Declaraciones'...")
-                await page.wait_for_load_state("networkidle")
-                # Selector más robusto para la pestaña Declaraciones
-                try:
-                    await page.click("text=/^\\s*Declaraciones\\s*$/", timeout=5000)
-                except:
-                    await self.log("No se pudo hacer clic exacto en 'Declaraciones', intentando alternativa...")
-                    await page.click("div:has-text('Declaraciones')")
-                await asyncio.sleep(2)
-
-                # 4. Buscar el ítem de F29 y hacer clic para expandir
-                await self.log("Buscando sección de F29...")
-                await page.click("text=Declaración de IVA, impuestos mensuales (F29)")
-                await asyncio.sleep(3)
-
-                # 5. Buscar la fila del periodo objetivo o el más reciente pendiente
-                periodo_objetivo = f"{mes} {anio}" if mes and anio else None
+                await self.log("Haciendo clic en 'Pendiente' para entrar al formulario...")
+                async with page.expect_navigation():
+                    await btn_pendiente.click()
                 
-                if periodo_objetivo:
-                    await self.log(f"Buscando periodo específico: {periodo_objetivo}...")
-                    fila_target = page.locator("tr").filter(has_text=periodo_objetivo).filter(has_text="Pendiente")
-                else:
-                    await self.log("Buscando el periodo pendiente más reciente...")
-                    # Tomamos la primera fila que tenga el texto 'Pendiente' dentro de la sección de F29
-                    fila_target = page.locator("tr:has-text('Pendiente')").first
+                await asyncio.sleep(15) # Esperar carga profunda del formulario/selector de periodo
+                await self.log(f"Página de selección/formulario cargada. URL: {page.url}")
                 
-                if await fila_target.count() > 0:
-                    texto_periodo = await fila_target.locator("td").first.inner_text()
-                    await self.log(f"Periodo detectado: {texto_periodo.strip()} ✅")
-                    
-                    # El botón 'Pendiente' suele ser el link
-                    btn_pendiente = fila_target.locator("text=Pendiente")
-                    
-                    await self.log("Haciendo clic en 'Pendiente' para entrar al formulario...")
-                    async with page.expect_navigation():
-                        await btn_pendiente.click()
-                    
-                    await asyncio.sleep(15) # Esperar carga profunda del formulario/selector de periodo
-                    await self.log(f"Página de selección/formulario cargada. URL: {page.url}")
-                    
-                    # --- NUEVO: Manejo de Modal de Actividad Económica (Enero 2026) ---
-                    await self.log("Verificando si aparece modal de Actividad Económica...")
-                    modal_actividad = page.locator("div:has-text('ACTIVIDAD ECONÓMICA PRINCIPAL')")
-                    if await modal_actividad.count() > 0 and await modal_actividad.is_visible():
-                        await self.log("Modal detectado. Seleccionando actividad...")
-                        try:
-                            # Seleccionar la primera opción válida del dropdown
-                            select_act = page.locator("select").filter(has_text="Seleccione Actividad")
-                            if await select_act.count() > 0:
-                                await select_act.select_option(index=1)
-                                await asyncio.sleep(1)
-                                await page.click("button:has-text('Confirmar')")
-                                await self.log("Actividad confirmada.")
-                                await asyncio.sleep(5)
-                        except Exception as e:
-                            await self.log(f"No se pudo completar el modal: {e}", "error")
-                            # Intentar simplemente cerrar si existe el botón
-                            await page.click("button:has-text('Cerrar')")
+                # --- NUEVO: Manejo de Modal de Actividad Económica (Enero 2026) ---
+                await self.log("Verificando si aparece modal de Actividad Económica...")
+                modal_actividad = page.locator("div:has-text('ACTIVIDAD ECONÓMICA PRINCIPAL')")
+                if await modal_actividad.count() > 0 and await modal_actividad.is_visible():
+                    await self.log("Modal detectado. Seleccionando actividad...")
+                    try:
+                        # Seleccionar la primera opción válida del dropdown
+                        select_act = page.locator("select").filter(has_text="Seleccione Actividad")
+                        if await select_act.count() > 0:
+                            await select_act.select_option(index=1)
+                            await asyncio.sleep(1)
+                            await page.click("button:has-text('Confirmar')")
+                            await self.log("Actividad confirmada.")
+                            await asyncio.sleep(5)
+                    except Exception as e:
+                        await self.log(f"No se pudo completar el modal: {e}", "error")
+                        # Intentar simplemente cerrar si existe el botón
+                        await page.click("button:has-text('Cerrar')")
 
-                    # 6. Detectar si estamos en la página de "Aceptar"
-                    btn_aceptar = page.locator("button:has-text('Aceptar')")
-                    if await btn_aceptar.count() > 0:
-                        await self.log("Detectado botón 'Aceptar'. Haciendo clic para ver propuesta...")
-                        await btn_aceptar.click()
-                        await asyncio.sleep(15) # Esperar carga profunda del formulario/asistentes
+                # 6. Detectar si estamos en la página de "Aceptar"
+                btn_aceptar = page.locator("button:has-text('Aceptar')")
+                if await btn_aceptar.count() > 0:
+                    await self.log("Detectado botón 'Aceptar'. Haciendo clic para ver propuesta...")
+                    await btn_aceptar.click()
+                    await asyncio.sleep(15) # Esperar carga profunda del formulario/asistentes
 
-                    # 7. Superar Asistentes de Cálculo (Botón Continuar)
-                    btn_continuar = page.locator("button:has-text('Continuar')")
-                    if await btn_continuar.count() > 0:
-                        await self.log("Superando asistentes de cálculo...")
-                        await btn_continuar.click()
-                        await asyncio.sleep(5)
-
-                    # 8. Modal de Información Adicional (IMPORTANTE)
-                    await self.log("Verificando modal de confirmación de datos...")
-                    check_aceptar = page.locator("#checkAceptar")
-                    if await check_aceptar.count() > 0:
-                        await self.log("Marcando checkbox de confirmación...")
-                        await check_aceptar.check()
-                        await asyncio.sleep(1)
-                        btn_confirmar_complemento = page.locator("button:has-text('Confirmar que no debo complementar')")
-                        if await btn_confirmar_complemento.count() > 0:
-                            await btn_confirmar_complemento.click()
-                            await self.log("Información adicional confirmada.")
-                            await asyncio.sleep(8)
-
-                    # 9. Cerrar Modal de Atención (si aparece)
-                    btn_cerrar_atencion = page.locator("button:has-text('Cerrar')").or_(page.locator(".modal-footer button"))
-                    if await btn_cerrar_atencion.count() > 0 and await btn_cerrar_atencion.is_visible():
-                        await self.log("Cerrando modal de atención...")
-                        await btn_cerrar_atencion.first.click()
-                        await asyncio.sleep(2)
-
-                    # 10. Ir al Formulario Completo (donde están todos los códigos con valores reales)
-                    await self.log("Buscando acceso al Formulario Completo...")
-                    # A veces el botón tarda en aparecer o está en un frame
+                # 7. Superar Asistentes de Cálculo (Botón Continuar)
+                btn_continuar = page.locator("button:has-text('Continuar')")
+                if await btn_continuar.count() > 0:
+                    await self.log("Superando asistentes de cálculo...")
+                    await btn_continuar.click()
                     await asyncio.sleep(5)
-                    link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29")).or_(page.locator("text=Formulario en Pantalla"))
-                    
-                    found_link = False
-                    for _ in range(3): # Re-intentar 3 veces con esperas
-                        if await link_formulario.count() > 0 and await link_formulario.first.is_visible():
-                            await self.log("Accediendo a la vista de Formulario Completo...")
-                            await link_formulario.first.click()
-                            await asyncio.sleep(12)
-                            found_link = True
-                            break
-                        await asyncio.sleep(3)
-                        
-                    if not found_link:
-                         await self.log("⚠️ No se encontró el botón para el Formulario Completo. Intentando extracción en vista actual.")
 
-                    await self.log(f"Formulario final cargado. URL: {page.url}")
-                    
-                    # 11. Scroll Automático
-                    await self.log("Desplazando por la planilla final...")
-                    for i in range(5):
-                        await page.mouse.wheel(0, 1000)
-                        await asyncio.sleep(1)
-                    await page.mouse.wheel(0, -5000) 
+                # 8. Modal de Información Adicional (IMPORTANTE)
+                await self.log("Verificando modal de confirmación de datos...")
+                check_aceptar = page.locator("#checkAceptar")
+                if await check_aceptar.count() > 0:
+                    await self.log("Marcando checkbox de confirmación...")
+                    await check_aceptar.check()
+                    await asyncio.sleep(1)
+                    btn_confirmar_complemento = page.locator("button:has-text('Confirmar que no debo complementar')")
+                    if await btn_confirmar_complemento.count() > 0:
+                        await btn_confirmar_complemento.click()
+                        await self.log("Información adicional confirmada.")
+                        await asyncio.sleep(8)
+
+                # 9. Cerrar Modal de Atención (si aparece)
+                btn_cerrar_atencion = page.locator("button:has-text('Cerrar')").or_(page.locator(".modal-footer button"))
+                if await btn_cerrar_atencion.count() > 0 and await btn_cerrar_atencion.is_visible():
+                    await self.log("Cerrando modal de atención...")
+                    await btn_cerrar_atencion.first.click()
                     await asyncio.sleep(2)
 
-                    # 12. Extracción de códigos
-                    await self.log("Iniciando extracción de códigos clave...")
-                    codigos_objetivo = {
-                        "538": "Impuesto Único",
-                        "589": "IVA Débito (Total)",
-                        "503": "Débito Facturas",
-                        "511": "IVA Crédito E-Factura",
-                        "537": "Crédito Periodo",
-                        "504": "Remanente Mes Ant.",
-                        "77": "Remanente Mes Sig.",
-                        "91": "Total a Pagar",
-                        "62": "PPM Neto"
-                    }
-                    resultados = {k: 0 for k in codigos_objetivo.keys()}
+                # 10. Ir al Formulario Completo (donde están todos los códigos con valores reales)
+                await self.log("Buscando acceso al Formulario Completo...")
+                # A veces el botón tarda en aparecer o está en un frame
+                await asyncio.sleep(5)
+                link_formulario = page.locator("text=Ingresa aquí").or_(page.locator("text=Ver Formulario 29")).or_(page.locator("text=Formulario en Pantalla"))
+                
+                found_link = False
+                for _ in range(3): # Re-intentar 3 veces con esperas
+                    if await link_formulario.count() > 0 and await link_formulario.first.is_visible():
+                        await self.log("Accediendo a la vista de Formulario Completo...")
+                        await link_formulario.first.click()
+                        await asyncio.sleep(12)
+                        found_link = True
+                        break
+                    await asyncio.sleep(3)
                     
-                    # ESPERAR A QUE CARGUE EL FORMULARIO EN ALGÚN FRAME
-                    await self.log("Esperando carga de datos en formulario (Buscando en todos los frames)...")
-                    
-                    form_ready = False
-                    for _ in range(15): # Intentar por 30 segundos
-                        for f in page.frames:
+                if not found_link:
+                     await self.log("⚠️ No se encontró el botón para el Formulario Completo. Intentando extracción en vista actual.")
+
+                await self.log(f"Formulario final cargado. URL: {page.url}")
+                
+                # 11. Scroll Automático
+                await self.log("Desplazando por la planilla final...")
+                for i in range(5):
+                    await page.mouse.wheel(0, 1000)
+                    await asyncio.sleep(1)
+                await page.mouse.wheel(0, -5000) 
+                await asyncio.sleep(2)
+
+                # 12. Extracción de códigos
+                await self.log("Iniciando extracción de códigos clave...")
+                codigos_objetivo = {
+                    "538": "Impuesto Único",
+                    "589": "IVA Débito (Total)",
+                    "503": "Débito Facturas",
+                    "511": "IVA Crédito E-Factura",
+                    "537": "Crédito Periodo",
+                    "504": "Remanente Mes Ant.",
+                    "77": "Remanente Mes Sig.",
+                    "91": "Total a Pagar",
+                    "62": "PPM Neto"
+                }
+                resultados = {k: 0 for k in codigos_objetivo.keys()}
+                
+                # ESPERAR A QUE CARGUE EL FORMULARIO EN ALGÚN FRAME
+                await self.log("Esperando carga de datos en formulario (Buscando en todos los frames)...")
+                
+                form_ready = False
+                for _ in range(15): # Intentar por 30 segundos
+                    for f in page.frames:
+                        try:
+                            content = await f.inner_text("body")
+                            if "Débito" in content or "538" in content or "IVA" in content:
+                                form_ready = True
+                                break
+                        except: continue
+                    if form_ready: break
+                    await asyncio.sleep(2)
+                
+                if not form_ready:
+                    await self.log("⚠️ No se detectó contenido del formulario tras 30s. Intentando extracción de todos modos.")
+                else:
+                    await self.log("✅ Contenido del formulario detectado en los frames.")
+                
+                await asyncio.sleep(3) # Estabilización final
+
+                for cod in codigos_objetivo.keys():
+                    await self.log(f"Buscando Código [{cod}]...")
+                    found = False
+                    # Buscamos en todas las páginas abiertas (por si abrió pestaña nueva)
+                    for p in page.context.pages:
+                        if found: break
+                        for frame in p.frames:
                             try:
-                                content = await f.inner_text("body")
-                                if "Débito" in content or "538" in content or "IVA" in content:
-                                    form_ready = True
-                                    break
-                            except: continue
-                        if form_ready: break
-                        await asyncio.sleep(2)
-                    
-                    if not form_ready:
-                        await self.log("⚠️ No se detectó contenido del formulario tras 30s. Intentando extracción de todos modos.")
-                    else:
-                        await self.log("✅ Contenido del formulario detectado en los frames.")
-                    
-                    await asyncio.sleep(3) # Estabilización final
+                                valor = await frame.evaluate(f"""(c) => {{
+                                    const cleanNum = (str) => {{
+                                        if (!str) return null;
+                                        const cleaned = str.replace(/[^0-9]/g, '');
+                                        return cleaned.length > 0 ? parseInt(cleaned).toString() : null;
+                                    }};
 
-                    for cod in codigos_objetivo.keys():
-                        await self.log(f"Buscando Código [{cod}]...")
-                        found = False
-                        # Buscamos en todas las páginas abiertas (por si abrió pestaña nueva)
-                        for p in page.context.pages:
-                            if found: break
-                            for frame in p.frames:
-                                try:
-                                    valor = await frame.evaluate(f"""(c) => {{
-                                        const cleanNum = (str) => {{
-                                            if (!str) return null;
-                                            const cleaned = str.replace(/[^0-9]/g, '');
-                                            return cleaned.length > 0 ? parseInt(cleaned).toString() : null;
-                                        }};
+                                    // 1. Prioridad: Input con ID o Name que contenga el código
+                                    const input = document.getElementById('valCode' + c) || 
+                                                  document.getElementById('code' + c) ||
+                                                  document.querySelector(`input[id*="${{c}}"]`) ||
+                                                  document.querySelector(`input[name*="${{c}}"]`);
+                                    
+                                    if (input && input.value && cleanNum(input.value)) return input.value;
 
-                                        // 1. Prioridad: Input con ID o Name que contenga el código
-                                        const input = document.getElementById('valCode' + c) || 
-                                                      document.getElementById('code' + c) ||
-                                                      document.querySelector(`input[id*="${{c}}"]`) ||
-                                                      document.querySelector(`input[name*="${{c}}"]`);
-                                        
-                                        if (input && input.value && cleanNum(input.value)) return input.value;
+                                    // 2. Búsqueda por "Label" o Celda que contenga el código (Regex)
+                                    // Buscamos algo como "[504]" o "504:" o "(504)" en el texto
+                                    const elements = Array.from(document.querySelectorAll('td, span, div, b, label'));
+                                    const regex = new RegExp('(\\\\[|\\\\(|^|\\\\s)' + c + '(\\\\]|\\\\)|:|\\\\s|$)');
+                                    
+                                    const labelEl = elements.find(el => regex.test(el.innerText));
+                                    
+                                    if (labelEl) {{
+                                        // Si la celda misma tiene el número largo (ej: "504: 28.500.956")
+                                        if (cleanNum(labelEl.innerText) && cleanNum(labelEl.innerText).length > c.length) {{
+                                            return labelEl.innerText;
+                                        }}
 
-                                        // 2. Búsqueda por "Label" o Celda que contenga el código (Regex)
-                                        // Buscamos algo como "[504]" o "504:" o "(504)" en el texto
-                                        const elements = Array.from(document.querySelectorAll('td, span, div, b, label'));
-                                        const regex = new RegExp('(\\\\[|\\\\(|^|\\\\s)' + c + '(\\\\]|\\\\)|:|\\\\s|$)');
-                                        
-                                        const labelEl = elements.find(el => regex.test(el.innerText));
-                                        
-                                        if (labelEl) {{
-                                            // Si la celda misma tiene el número largo (ej: "504: 28.500.956")
-                                            if (cleanNum(labelEl.innerText) && cleanNum(labelEl.innerText).length > c.length) {{
-                                                return labelEl.innerText;
-                                            }}
+                                        // Si no, buscar en la fila o alrededores
+                                        const container = labelEl.closest('tr') || labelEl.closest('div.row') || labelEl.parentElement;
+                                        if (container) {{
+                                            // Buscar input en el contenedor
+                                            const inCont = container.querySelector('input');
+                                            if (inCont && inCont.value && cleanNum(inCont.value)) return inCont.value;
 
-                                            // Si no, buscar en la fila o alrededores
-                                            const container = labelEl.closest('tr') || labelEl.closest('div.row') || labelEl.parentElement;
-                                            if (container) {{
-                                                // Buscar input en el contenedor
-                                                const inCont = container.querySelector('input');
-                                                if (inCont && inCont.value && cleanNum(inCont.value)) return inCont.value;
-
-                                                // Buscar cualquier número largo en las celdas hermanas
-                                                const siblings = Array.from(container.querySelectorAll('td, div, span'));
-                                                for (let s of siblings.reverse()) {{
-                                                    const val = cleanNum(s.innerText);
-                                                    if (val && val !== c) return s.innerText;
-                                                }}
+                                            // Buscar cualquier número largo en las celdas hermanas
+                                            const siblings = Array.from(container.querySelectorAll('td, div, span'));
+                                            for (let s of siblings.reverse()) {{
+                                                const val = cleanNum(s.innerText);
+                                                if (val && val !== c) return s.innerText;
                                             }}
                                         }}
-                                        return null;
-                                    }}""", cod)
+                                    }}
+                                    return null;
+                                }}""", cod)
 
-                                    if valor:
-                                        val_limpio = valor.strip().replace(".", "").replace("$", "").replace(",", "")
-                                        if val_limpio.isdigit():
-                                            resultados[cod] = int(val_limpio)
-                                            await self.log(f"    Code [{cod}]: {resultados[cod]} (Encontrado en {frame.url[:40]}...)")
-                                            found = True
-                                            break
-                                except: continue
-                        
-                        if not found:
-                             await self.log(f"    Code [{cod}]: 0 (No Encontrado)")
-
-                    await page.screenshot(path="f29_full_data_extracted.png")
+                                if valor:
+                                    val_limpio = valor.strip().replace(".", "").replace("$", "").replace(",", "")
+                                    if val_limpio.isdigit():
+                                        resultados[cod] = int(val_limpio)
+                                        await self.log(f"    Code [{cod}]: {resultados[cod]} (Encontrado en {frame.url[:40]}...)")
+                                        found = True
+                                        break
+                            except: continue
                     
-                    # Verificación de pago (Código 91)
-                    total_a_pagar = resultados.get("91", 0)
-                    if total_a_pagar > 0:
-                        await self.log(f"⚠️ Atención: Declaración con pago pendiente de ${total_a_pagar}.")
-                    else:
-                        await self.log("✅ Declaración sin pago determinado o en $0.")
+                    if not found:
+                         await self.log(f"    Code [{cod}]: 0 (No Encontrado)")
 
-                    return {
-                        "periodo": texto_periodo.strip() if 'texto_periodo' in locals() else "Desconocido",
-                        "url": page.url,
-                        "datos": resultados,
-                        "pago_requerido": total_a_pagar > 0,
-                        "monto_pago": total_a_pagar
-                    }
+                await page.screenshot(path="f29_full_data_extracted.png")
+                
+                # Verificación de pago (Código 91)
+                total_a_pagar = resultados.get("91", 0)
+                if total_a_pagar > 0:
+                    await self.log(f"⚠️ Atención: Declaración con pago pendiente de ${total_a_pagar}.")
                 else:
-                    print(f"[{self.rut}]  No se encontró el periodo solicitado ({mes} {anio} - pendiente) en las alertas.")
-                    return None
+                    await self.log("✅ Declaración sin pago determinado o en $0.")
 
-            except Exception as e:
-                print(f"[{self.rut}]  Error navegando desde Home: {str(e)}")
+                return {
+                    "periodo": texto_periodo.strip() if 'texto_periodo' in locals() else "Desconocido",
+                    "url": page.url,
+                    "datos": resultados,
+                    "pago_requerido": total_a_pagar > 0,
+                    "monto_pago": total_a_pagar
+                }
+            else:
+                print(f"[{self.rut}]  No se encontró el periodo solicitado ({mes} {anio} - pendiente) en las alertas.")
+                return None
+
+        except Exception as e:
+            print(f"[{self.rut}]  Error navegando desde Home: {str(e)}")
+            if 'page' in locals():
                 await page.screenshot(path="error_navigation_home.png")
-                return False
-            # REMOVIDO: finally browser.close() para permitir persistencia en Scouting Interactivo
+            return False
+        # REMOVIDO: finally browser.close() para permitir persistencia en Scouting Interactivo
 
     async def submit_f29(self, page, banco=None):
         """
