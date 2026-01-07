@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Header, WebSocket, WebSocketDisconnect
+﻿from fastapi import FastAPI, HTTPException, BackgroundTasks, Header, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Cerebro SII - Automatizaciones",
-    description="Microservicio para automatizar trámites en el SII (Carpeta Tributaria, etc.)",
+    description="Microservicio para automatizar trÃ¡mites en el SII (Carpeta Tributaria, etc.)",
     version="1.0.0"
 )
 
@@ -96,12 +96,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 banco = command_data.get("banco")
                 if rut in SESSIONS:
                     scraper = SESSIONS[rut]["scraper"]
-                    # Nota: Aquí necesitaríamos la instancia de 'page' activa.
-                    # Por simplicidad en este MVP, asumimos que navigate_to_f29 dejó el browser abierto.
-                    # En una versión pro, pasaríamos la página.
+                    # Nota: AquÃ­ necesitarÃ­amos la instancia de 'page' activa.
+                    # Por simplicidad en este MVP, asumimos que navigate_to_f29 dejÃ³ el browser abierto.
+                    # En una versiÃ³n pro, pasarÃ­amos la pÃ¡gina.
                     asyncio.create_task(run_final_submission(scraper, websocket, banco))
                 else:
-                    await manager.send_personal_message({"type": "log", "text": "❌ No hay una sesión activa para este RUT.", "log_type": "error"}, websocket)
+                    await manager.send_personal_message({"type": "log", "text": "âŒ No hay una sesiÃ³n activa para este RUT.", "log_type": "error"}, websocket)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -110,27 +110,27 @@ async def websocket_endpoint(websocket: WebSocket):
 
 async def run_final_submission(scraper, websocket, banco):
     try:
-        # Recuperar la página del scraper (esto requiere que el scraper guarde la página)
+        # Recuperar la pÃ¡gina del scraper (esto requiere que el scraper guarde la pÃ¡gina)
         if not scraper.page:
-            await manager.send_personal_message({"type": "log", "text": "❌ La sesión del navegador se cerró. Reinicia el scouting.", "log_type": "error"}, websocket)
+            await manager.send_personal_message({"type": "log", "text": "âŒ La sesiÃ³n del navegador se cerrÃ³. Reinicia el scouting.", "log_type": "error"}, websocket)
             return
 
         result = await scraper.submit_f29(scraper.page, banco)
         if result:
             await manager.send_personal_message({
                 "type": "log", 
-                "text": f"✅ Declaración enviada con éxito. Folio: {result['folio']}", 
+                "text": f"âœ… DeclaraciÃ³n enviada con Ã©xito. Folio: {result['folio']}", 
                 "log_type": "success",
                 "payload": result
             }, websocket)
         else:
-            await manager.send_personal_message({"type": "log", "text": "❌ Falló el envío de la declaración.", "log_type": "error"}, websocket)
+            await manager.send_personal_message({"type": "log", "text": "âŒ FallÃ³ el envÃ­o de la declaraciÃ³n.", "log_type": "error"}, websocket)
     except Exception as e:
-        await manager.send_personal_message({"type": "log", "text": f"💥 Error en envío: {str(e)}", "log_type": "error"}, websocket)
+        await manager.send_personal_message({"type": "log", "text": f"ðŸ’¥ Error en envÃ­o: {str(e)}", "log_type": "error"}, websocket)
 
 async def run_live_scout(scraper, websocket, mes=None, anio=None):
     try:
-        # 1. Ejecutamos la navegación del F29 (Propuesta)
+        # 1. Ejecutamos la navegaciÃ³n del F29 (Propuesta)
         result_f29 = await scraper.navigate_to_f29_from_home(mes, anio)
         
         # 2. Cruce de datos con el Registro de Compras (RCV) para detectar facturas pendientes
@@ -138,12 +138,12 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
         rcv_data = await scraper.check_pending_rcv(mes, anio)
         
         if result_f29:
-             # GUARDAR CONTEXTO PARA EL CHAT POST-EJECUCIÓN
+             # GUARDAR CONTEXTO PARA EL CHAT POST-EJECUCIÃ“N
              rut_limpio = scraper.rut
              
              # Consolidar datos para la IA
              scouting_data = result_f29 if isinstance(result_f29, dict) else {
-                 "resumen": "Navegación en vivo completada exitosamente.",
+                 "resumen": "NavegaciÃ³n en vivo completada exitosamente.",
                  "estado": "Formulario F29 accedido",
                  "rut": rut_limpio,
                  "datos": {}
@@ -151,23 +151,23 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
              # Inyectar datos del RCV en el scouting
              scouting_data["rcv_pendientes"] = rcv_data if rcv_data else {"total_pendientes": 0, "iva_pendiente": 0}
              
-             # Obtener el análisis de la IA automáticamente
-             await manager.send_personal_message({"type": "log", "text": "🤖 Solicitando análisis al Auditor IA...", "log_type": "info"}, websocket)
+             # Obtener el anÃ¡lisis de la IA automÃ¡ticamente
+             await manager.send_personal_message({"type": "log", "text": "ðŸ¤– Solicitando anÃ¡lisis al Auditor IA...", "log_type": "info"}, websocket)
              analisis_ia = await auditor.analizar_f29(scouting_data)
              
-             # Prompt enriquecido con los datos extraídos para el chat posterior
+             # Prompt enriquecido con los datos extraÃ­dos para el chat posterior
              datos_txt = json.dumps(scouting_data.get('datos', {}), indent=2)
              rcv_txt = json.dumps(scouting_data.get('rcv_pendientes', {}), indent=2)
              
-             sys_prompt = f"""Eres un Auditor Tributario de nivel SaaS Contable. Acabas de realizar una nevegación EN VIVO para el RUT {rut_limpio}.
+             sys_prompt = f"""Eres un Auditor Tributario de nivel SaaS Contable. Acabas de realizar una nevegaciÃ³n EN VIVO para el RUT {rut_limpio}.
              Se extrajeron los siguientes datos del F29:
              {datos_txt}
              
              Y estos datos del Registro de Compras (RCV):
              {rcv_txt}
              
-             Usa estos valores para el chat. Si ves facturas pendientes en el RCV, advierte que se está perdiendo IVA crédito.
-             Si el usuario pregunta qué hacer, guíalo según el análisis previo:
+             Usa estos valores para el chat. Si ves facturas pendientes en el RCV, advierte que se estÃ¡ perdiendo IVA crÃ©dito.
+             Si el usuario pregunta quÃ© hacer, guÃ­alo segÃºn el anÃ¡lisis previo:
              {analisis_ia}
              """
              
@@ -177,9 +177,10 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
                  "last_analysis": analisis_ia
              }
 
-              await manager.send_personal_message({
+
+             await manager.send_personal_message({
                  "type": "log",
-                 "text": "✅ Auditoría de Agente Proactivo completada con éxito.",
+                 "text": "âœ… AuditorÃ­a de Agente Proactivo completada con Ã©xito.",
                  "log_type": "success",
                  "payload": {
                      "scouting": scouting_data,
@@ -187,36 +188,36 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
                  }
              }, websocket)
 
-              # ENVIAR EL ANÁLISIS COMO MENSAJE DE CHAT (Para que aparezca en el globo)
-              # Usamos múltiples campos para asegurar compatibilidad con el frontend
-              await manager.send_personal_message({
-                  "type": "chat",
-                  "text": analisis_ia,
-                  "message": analisis_ia,
-                  "reply": analisis_ia,
-                  "content": analisis_ia,
-                  "sender": "ai"
-              }, websocket)
-             # Aquí podríamos enviar los datos finales si los tuviéramos
+             # ENVIAR EL ANÃLISIS COMO MENSAJE DE CHAT (Para que aparezca en el globo)
+             # Usamos mÃºltiples campos para asegurar compatibilidad con el frontend
+             await manager.send_personal_message({
+                 "type": "chat",
+                 "text": analisis_ia,
+                 "message": analisis_ia,
+                 "reply": analisis_ia,
+                 "content": analisis_ia,
+                 "sender": "ai"
+             }, websocket)
+             # AquÃ­ podrÃ­amos enviar los datos finales si los tuviÃ©ramos
         else:
              await manager.send_personal_message({
                 "type": "log",
-                "text": "❌ El proceso finalizó sin resultados o con error.",
+                "text": "âŒ El proceso finalizÃ³ sin resultados o con error.",
                 "log_type": "error"
             }, websocket)
             
     except Exception as e:
         await manager.send_personal_message({
             "type": "log",
-            "text": f"💥 Error crítico en agente: {str(e)}",
+            "text": f"ðŸ’¥ Error crÃ­tico en agente: {str(e)}",
             "log_type": "error"
         }, websocket)
     finally:
-        # Mantener la sesión abierta para permitir interacción (ej: enviar declaración)
+        # Mantener la sesiÃ³n abierta para permitir interacciÃ³n (ej: enviar declaraciÃ³n)
         # await scraper.close_session()
         pass
 
-# Configuración de Seguridad Simple
+# ConfiguraciÃ³n de Seguridad Simple
 API_KEY_CREDENTIAL = os.getenv("API_KEY_SCII", "mi_llave_secreta_123")
 
 # GESTOR DE SESIONES ACTIVAS (En memoria para esta fase de test)
@@ -232,7 +233,7 @@ class ChatRequest(BaseModel):
     history: list
 
 class CarpetaRequest(BaseModel):
-    rut_dueño: str
+    rut_dueno: str
     clave_sii: str
     dest_rut: str
     dest_correo: str
@@ -259,7 +260,7 @@ if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
 
 def cleanup_file(path: str):
-    """Elimina el archivo después de un tiempo para no llenar el disco."""
+    """Elimina el archivo despuÃ©s de un tiempo para no llenar el disco."""
     try:
         if os.path.exists(path):
             os.remove(path)
@@ -276,9 +277,9 @@ async def api_rcv_resumen(
     req: RCVRequest, 
     x_api_key: str = Header(None)
 ):
-    # Validación básica de API Key
+    # ValidaciÃ³n bÃ¡sica de API Key
     if x_api_key != API_KEY_CREDENTIAL:
-        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key invÃ¡lida.")
 
     scraper = SIIScraper(req.rut, req.clave)
     
@@ -304,14 +305,14 @@ async def api_descargar_carpeta(
     background_tasks: BackgroundTasks,
     x_api_key: str = Header(None)
 ):
-    # Validación básica de API Key
+    # ValidaciÃ³n bÃ¡sica de API Key
     if x_api_key != API_KEY_CREDENTIAL:
-        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key invÃ¡lida.")
 
-    filename = f"carpeta_{req.rut_dueño.replace('-', '')}_{uuid.uuid4().hex[:6]}.pdf"
+    filename = f"carpeta_{req.rut_dueno.replace('-', '')}_{uuid.uuid4().hex[:6]}.pdf"
     file_path = os.path.join(TEMP_DIR, filename)
     
-    scraper = SIIScraper(req.rut_dueño, req.clave_sii)
+    scraper = SIIScraper(req.rut_dueno, req.clave_sii)
     
     datos_envio = {
         "dest_rut": req.dest_rut,
@@ -323,7 +324,7 @@ async def api_descargar_carpeta(
     success = await scraper.get_carpeta_tributaria(file_path, datos_envio)
     
     if not success:
-        # Intentamos borrar si quedó un archivo corrupto
+        # Intentamos borrar si quedÃ³ un archivo corrupto
         if os.path.exists(file_path):
             os.remove(file_path)
         raise HTTPException(
@@ -331,13 +332,13 @@ async def api_descargar_carpeta(
             detail="Error al generar carpeta. Verifica credenciales o el estado de la web del SII."
         )
     
-    # Programar eliminación del archivo en 5 minutos para dar tiempo a la descarga
+    # Programar eliminaciÃ³n del archivo en 5 minutos para dar tiempo a la descarga
     # pero no dejarlo para siempre en el servidor.
     background_tasks.add_task(cleanup_file, file_path)
     
     return FileResponse(
         path=file_path,
-        filename=f"Carpeta_Tributaria_{req.rut_dueño}.pdf",
+        filename=f"Carpeta_Tributaria_{req.rut_dueno}.pdf",
         media_type='application/pdf'
     )
 
@@ -347,7 +348,7 @@ async def api_rcv_anual(
     x_api_key: str = Header(None)
 ):
     if x_api_key != API_KEY_CREDENTIAL:
-        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key invÃ¡lida.")
 
     scraper = SIIScraperAnual(req.rut, req.clave)
     data = await scraper.get_rcv_ultimos_12_meses()
@@ -370,33 +371,33 @@ async def api_f29_datos(
     ruta_oficial: Optional[bool] = False
 ):
     if x_api_key != API_KEY_CREDENTIAL:
-        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key invÃ¡lida.")
 
     scraper = SIIScraper(req.rut, req.clave)
     
-    # Elección de estrategia de navegación
+    # ElecciÃ³n de estrategia de navegaciÃ³n
     if req.es_propuesta:
         if ruta_oficial:
             print(f"[{get_chile_time()}] [{req.rut}] Iniciando navegacin por ruta oficial (Servicios Online)...")
             success = await scraper.navigate_to_f29_official_path(req.anio, req.mes)
             if not success:
-                raise HTTPException(status_code=500, detail="Error en navegación por ruta oficial.")
-            # Después de navegar, extraemos los datos (asumiendo que navigate dejó la página lista)
-            # Nota: get_f29_data podría ser refactorizado para extraer de la página actual, 
+                raise HTTPException(status_code=500, detail="Error en navegaciÃ³n por ruta oficial.")
+            # DespuÃ©s de navegar, extraemos los datos (asumiendo que navigate dejÃ³ la pÃ¡gina lista)
+            # Nota: get_f29_data podrÃ­a ser refactorizado para extraer de la pÃ¡gina actual, 
             # pero por ahora get_f29_data hace su propio browser context.
-            # Para esta demo, usamos get_f29_data directamente que es lo más estable.
+            # Para esta demo, usamos get_f29_data directamente que es lo mÃ¡s estable.
             data = await scraper.get_f29_data(req.anio, req.mes, es_propuesta=True)
         else:
-            print(f"[{get_chile_time()}] [{req.rut}] Iniciando extracción desde panel de alertas (Home)...")
+            print(f"[{get_chile_time()}] [{req.rut}] Iniciando extracciÃ³n desde panel de alertas (Home)...")
             data = await scraper.navigate_to_f29_from_home(req.mes, req.anio)
     else:
-        # Consulta histórica tradicional
+        # Consulta histÃ³rica tradicional
         data = await scraper.get_f29_data(req.anio, req.mes, es_propuesta=False)
     
     if data is None:
         raise HTTPException(
             status_code=500, 
-            detail="Error al extraer datos del F29. Verifica si el periodo está disponible o las credenciales."
+            detail="Error al extraer datos del F29. Verifica si el periodo estÃ¡ disponible o las credenciales."
         )
     
     return {
@@ -410,15 +411,15 @@ async def api_f29_scouting(
     x_api_key: str = Header(None)
 ):
     if x_api_key != API_KEY_CREDENTIAL:
-        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key invÃ¡lida.")
 
-    # Reutilizar o crear sesión persistente
+    # Reutilizar o crear sesiÃ³n persistente
     if req.rut not in SESSIONS:
         SESSIONS[req.rut] = SIIScraper(req.rut, req.clave)
     
     scraper = SESSIONS[req.rut]
     
-    # Obtener los datos técnicos del scouting
+    # Obtener los datos tÃ©cnicos del scouting
     scouting_data = await scraper.prepare_f29_scouting(req.anio, req.mes)
     
     # ENVIAR A TU API DE IA (Easypanel)
@@ -427,10 +428,10 @@ async def api_f29_scouting(
     # SYSTEM PROMPT INICIAL
     sys_prompt = f"""Eres un Auditor Tributario experto. Analiza estos datos del SII para el RUT {req.rut} (Periodo {req.mes}/{req.anio}).
     
-    Datos Técnicos:
+    Datos TÃ©cnicos:
     {scouting_data}
     
-    Tu objetivo es guiar al usuario para validar su F29. Sé breve y estratégico. Si ves discrepancias, alértalas.
+    Tu objetivo es guiar al usuario para validar su F29. SÃ© breve y estratÃ©gico. Si ves discrepancias, alÃ©rtalas.
     """
     
     # Iniciar historial de contexto
@@ -457,14 +458,14 @@ async def api_chat_interaction(
         raise HTTPException(status_code=403, detail="Acceso denegado")
 
     if req.rut not in SESSION_CONTEXT:
-        raise HTTPException(status_code=404, detail="No hay contexto de auditoría. Ejecuta el Scouting primero.")
+        raise HTTPException(status_code=404, detail="No hay contexto de auditorÃ­a. Ejecuta el Scouting primero.")
     
     context = SESSION_CONTEXT[req.rut]
     
     # Construir historial enriquecido con el System Prompt
     full_history = [{"role": "system", "content": context["base_system_prompt"]}] + req.history
     
-    # Añadir mensaje actual del usuario
+    # AÃ±adir mensaje actual del usuario
     full_history.append({"role": "user", "content": req.message})
 
     print(f"[{get_chile_time()}] [{req.rut}] Procesando mensaje de chat...")
@@ -481,15 +482,15 @@ async def api_session_close(
     x_api_key: str = Header(None)
 ):
     if x_api_key != API_KEY_CREDENTIAL:
-        raise HTTPException(status_code=403, detail="Acceso denegado: API Key inválida.")
+        raise HTTPException(status_code=403, detail="Acceso denegado: API Key invÃ¡lida.")
 
     if req.rut in SESSIONS:
         scraper = SESSIONS[req.rut]
         await scraper.close_session()
         del SESSIONS[req.rut]
-        return {"status": "success", "message": f"Sesión cerrada para el RUT {req.rut}"}
+        return {"status": "success", "message": f"SesiÃ³n cerrada para el RUT {req.rut}"}
     
-    return {"status": "info", "message": "No había una sesión activa para este RUT."}
+    return {"status": "info", "message": "No habÃ­a una sesiÃ³n activa para este RUT."}
 
 if __name__ == "__main__":
     import uvicorn
