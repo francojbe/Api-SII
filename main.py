@@ -186,6 +186,13 @@ async def run_live_scout(scraper, websocket, mes=None, anio=None):
                     "analisis_ia": analisis_ia
                 }
             }, websocket)
+
+             # ENVIAR EL ANÁLISIS COMO MENSAJE DE CHAT (Para que aparezca en el globo)
+             await manager.send_personal_message({
+                 "type": "chat",
+                 "text": analisis_ia,
+                 "sender": "ai"
+             }, websocket)
              # Aquí podríamos enviar los datos finales si los tuviéramos
         else:
              await manager.send_personal_message({
