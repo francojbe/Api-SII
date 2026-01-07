@@ -1,6 +1,7 @@
 import asyncio
 from playwright.async_api import async_playwright
 import os
+from datetime import datetime, timedelta, timezone
 
 class SIIScraper:
     def __init__(self, rut, clave, log_callback=None):
@@ -14,8 +15,10 @@ class SIIScraper:
         self.login_url = "https://zeusr.sii.cl/AUT2000/InicioAutenticacion/IngresoRutClave.html?https://misiir.sii.cl/cgi_misii/siihome.cgi"
 
     async def log(self, message: str, type: str = "info"):
-        """Envía logs al callback si existe, y también imprime en consola."""
-        formatted_msg = f"[{self.rut}] {message}"
+        """Envía logs al callback si existe, y también imprime en consola con hora Chile."""
+        # Chile está en UTC-3
+        chile_time = datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d %H:%M:%S")
+        formatted_msg = f"[{chile_time}] [{self.rut}] {message}"
         print(formatted_msg)
         if self.log_callback:
             # Si el callback es asíncrono, lo esperamos
@@ -46,7 +49,7 @@ class SIIScraper:
 
     async def _login(self, page):
         """Método interno para manejar la autenticación."""
-        print(f"[{self.rut}] Autenticando...")
+        await self.log("Autenticando...")
         await page.goto(self.login_url, wait_until="networkidle")
         await page.fill("#rutcntr", self.rut.replace(".", "").replace("-", ""))
         await page.fill("#clave", self.clave)

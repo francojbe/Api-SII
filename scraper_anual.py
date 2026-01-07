@@ -1,7 +1,7 @@
 import asyncio
 from playwright.async_api import async_playwright
 from scraper import SIIScraper
-import datetime
+from datetime import datetime, timedelta, timezone
 
 class SIIScraperAnual(SIIScraper):
     async def get_rcv_ultimos_12_meses(self, headless: bool = True):
@@ -40,7 +40,7 @@ class SIIScraperAnual(SIIScraper):
                 await self._login(page)
 
                 # 2. Ir a la App de RCV
-                print(f"[{self.rut}] Navegando al RCV para consolidación de últimos 12 meses...")
+                await self.log("Navegando al RCV para consolidación de últimos 12 meses...")
                 await page.goto("https://www4.sii.cl/consdcvinternetui/#/index", wait_until="networkidle")
 
                 # 3. Iterar por los periodos calculados
@@ -48,7 +48,7 @@ class SIIScraperAnual(SIIScraper):
                     mes_str = periodo["mes"]
                     anio_str = periodo["anio"]
                     
-                    print(f"[{self.rut}] ({p_idx+1}/12) Procesando: {mes_str}/{anio_str}...")
+                    await self.log(f"({p_idx+1}/12) Procesando: {mes_str}/{anio_str}...")
                     
                     try:
                         await page.wait_for_selector("#periodoMes", timeout=10000)
@@ -69,7 +69,7 @@ class SIIScraperAnual(SIIScraper):
                         await page.wait_for_load_state("networkidle")
 
                         # --- EXTRACCIÓN DE COMPRAS ---
-                        print(f"[{self.rut}] Extrayendo Compras {mes_str}/{anio_str}...")
+                        await self.log(f"Extrayendo Compras {mes_str}/{anio_str}...")
                         await page.click("a[href='#compra/']")
                         await asyncio.sleep(1)
                         await page.wait_for_load_state("networkidle")
@@ -92,7 +92,7 @@ class SIIScraperAnual(SIIScraper):
                         }""")
                         
                         # --- EXTRACCIÓN DE VENTAS ---
-                        print(f"[{self.rut}] Extrayendo Ventas {mes_str}/{anio_str}...")
+                        await self.log(f"Extrayendo Ventas {mes_str}/{anio_str}...")
                         await page.click("a[href='#venta/']")
                         await asyncio.sleep(1)
                         await page.wait_for_load_state("networkidle")
@@ -119,14 +119,14 @@ class SIIScraperAnual(SIIScraper):
                             "compras": compras,
                             "ventas": ventas
                         })
-                        print(f"[{self.rut}] ✅ {mes_str}/{anio_str} completado.")
+                        await self.log(f"✅ {mes_str}/{anio_str} completado.")
 
                     except Exception as e:
                         consolidado["data"].append({
                             "periodo": f"{anio_str}-{mes_str}",
                             "error": str(e)
                         })
-                        print(f"[{self.rut}] ⚠️ Error en {mes_str}/{anio_str}: {e}")
+                        await self.log(f"⚠️ Error en {mes_str}/{anio_str}: {e}", "error")
 
                 return consolidado
 

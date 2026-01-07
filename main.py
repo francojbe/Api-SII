@@ -6,6 +6,7 @@ import os
 import uuid
 import asyncio
 import json
+from datetime import datetime, timedelta, timezone
 from scraper import SIIScraper
 from scraper_anual import SIIScraperAnual
 from auditor_ia import auditor
@@ -25,6 +26,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- HELPER PARA LOGS CON HORA CHILE ---
+def get_chile_time():
+    return datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d %H:%M:%S")
 
 # --- WEBSOCKET CONNECTION MANAGER ---
 class ConnectionManager:
@@ -351,7 +356,7 @@ async def api_f29_datos(
     # Elección de estrategia de navegación
     if req.es_propuesta:
         if ruta_oficial:
-            print(f"[{req.rut}] Iniciando navegacin por ruta oficial (Servicios Online)...")
+            print(f"[{get_chile_time()}] [{req.rut}] Iniciando navegacin por ruta oficial (Servicios Online)...")
             success = await scraper.navigate_to_f29_official_path(req.anio, req.mes)
             if not success:
                 raise HTTPException(status_code=500, detail="Error en navegación por ruta oficial.")
@@ -361,7 +366,7 @@ async def api_f29_datos(
             # Para esta demo, usamos get_f29_data directamente que es lo más estable.
             data = await scraper.get_f29_data(req.anio, req.mes, es_propuesta=True)
         else:
-            print(f"[{req.rut}] Iniciando extracción desde panel de alertas (Home)...")
+            print(f"[{get_chile_time()}] [{req.rut}] Iniciando extracción desde panel de alertas (Home)...")
             data = await scraper.navigate_to_f29_from_home(req.mes, req.anio)
     else:
         # Consulta histórica tradicional
@@ -441,7 +446,7 @@ async def api_chat_interaction(
     # Añadir mensaje actual del usuario
     full_history.append({"role": "user", "content": req.message})
 
-    print(f"[{req.rut}] Procesando mensaje de chat...")
+    print(f"[{get_chile_time()}] [{req.rut}] Procesando mensaje de chat...")
     respuesta_ia = await auditor.chat_turn(full_history)
     
     return {
