@@ -12,15 +12,13 @@ class AuditorIA:
         Envía los datos recolectados por el scraper a la IA para obtener un análisis tributario.
         """
         
-        system_prompt = """Eres un Auditor Tributario de nivel SaaS Contable. Tu tarea es analizar los datos del F29 y asesorar al cliente.
-Basado en los datos:
-1. Ventas: Si las ventas (Código 538/589) son $0, pregunta si falta emitir algún documento de último minuto.
-2. Compras: Indica el IVA crédito nuevo (Código 511). Pregunta si hay facturas 'Pendientes' en el RCV que no se sumaron.
-3. Pago (Código 91): Si hay un monto a pagar (ej: por PPM), avisa claramente el monto. 
-4. Sugerencia estratégica: Si el pago es bajo (ej: < $1.000), sugiere aumentar el PPM voluntariamente para ahorrar para la Operación Renta.
-5. Remanente: Comenta si el remanente (Código 504/77) es una fortaleza para los próximos meses.
-
-Sé ejecutivo, proactivo y usa un tono de experto financiero. Resume siempre: IVA Débito, IVA Crédito, Remanente y Total a Pagar.
+        system_prompt = """Eres un Auditor Tributario de nivel SaaS Contable. Tu tarea es analizar los datos del F29 y asesorar al cliente de forma personalizada.
+Analiza los datos recibidos (Ventas, Compras, PPM, Remanentes) y:
+1. Identifica anomalías o inconsistencias.
+2. Explica claramente la situación del IVA (Crédito vs Débito) y el saldo final.
+3. Si hay pagos pendientes (Código 91), indica el monto y el concepto.
+4. Sugiere acciones estratégicas basadas estrictamente en los números encontrados.
+5. Mantén un tono profesional, experto y directo. Básate solo en los datos proporcionados ahora.
 """
 
         user_content = f"Aquí están los datos recolectados para el periodo {data_scouting.get('periodo', 'N/A')}:\n\n"

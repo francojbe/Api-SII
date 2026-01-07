@@ -78,9 +78,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Instanciar y ejecutar
                 scraper_instance = SIIScraper(rut, clave, log_callback=scraper_logger)
                 
+                mes = command_data.get("mes")
+                anio = command_data.get("anio")
+                
                 # Ejecutar en background para no bloquear el loop de lectura de WS
                 # Usamos asyncio.create_task para que corra "en paralelo"
-                task = asyncio.create_task(run_live_scout(scraper_instance, websocket))
+                task = asyncio.create_task(run_live_scout(scraper_instance, websocket, mes, anio))
                 SESSIONS[rut] = {"scraper": scraper_instance, "task": task}
 
             elif command_data.get("command") == "confirm_f29_submission":
@@ -120,10 +123,10 @@ async def run_final_submission(scraper, websocket, banco):
     except Exception as e:
         await manager.send_personal_message({"type": "log", "text": f"💥 Error en envío: {str(e)}", "log_type": "error"}, websocket)
 
-async def run_live_scout(scraper, websocket):
+async def run_live_scout(scraper, websocket, mes=None, anio=None):
     try:
         # Ejecutamos la navegación compleja
-        result = await scraper.navigate_to_f29_from_home()
+        result = await scraper.navigate_to_f29_from_home(mes, anio)
         
         if result:
              # GUARDAR CONTEXTO PARA EL CHAT POST-EJECUCIÓN
@@ -358,8 +361,8 @@ async def api_f29_datos(
             # Para esta demo, usamos get_f29_data directamente que es lo más estable.
             data = await scraper.get_f29_data(req.anio, req.mes, es_propuesta=True)
         else:
-            print(f"[{req.rut}] Iniciando extraccin desde panel de alertas (Home)...")
-            data = await scraper.navigate_to_f29_from_home()
+            print(f"[{req.rut}] Iniciando extracción desde panel de alertas (Home)...")
+            data = await scraper.navigate_to_f29_from_home(req.mes, req.anio)
     else:
         # Consulta histórica tradicional
         data = await scraper.get_f29_data(req.anio, req.mes, es_propuesta=False)

@@ -566,8 +566,11 @@ class SIIScraper:
             finally:
                 await browser.close()
 
-    async def navigate_to_f29_from_home(self):
-        """Navega al F29 utilizando las alertas de la página de inicio (Mi SII)."""
+    async def navigate_to_f29_from_home(self, mes=None, anio=None):
+        """
+        Navega al F29 utilizando las alertas de la página de inicio (Mi SII).
+        Si no se especifica mes/anio, busca el periodo más reciente con estado 'Pendiente'.
+        """
         page = await self._ensure_session()
 
         try:
@@ -597,14 +600,23 @@ class SIIScraper:
                 await page.click("text=Declaración de IVA, impuestos mensuales (F29)")
                 await asyncio.sleep(3)
 
-                # 5. Buscar la fila de 'Diciembre 2025' y el estado 'Pendiente'
-                await self.log("Verificando periodo Diciembre 2025...")
-                fila_diciembre = page.locator("tr:has-text('Diciembre 2025')")
-                if await fila_diciembre.count() > 0:
-                    await self.log("Periodo Diciembre 2025 detectado como PENDIENTE. ✅")
+                # 5. Buscar la fila del periodo objetivo o el más reciente pendiente
+                periodo_objetivo = f"{mes} {anio}" if mes and anio else None
+                
+                if periodo_objetivo:
+                    await self.log(f"Buscando periodo específico: {periodo_objetivo}...")
+                    fila_target = page.locator("tr").filter(has_text=periodo_objetivo).filter(has_text="Pendiente")
+                else:
+                    await self.log("Buscando el periodo pendiente más reciente...")
+                    # Tomamos la primera fila que tenga el texto 'Pendiente' dentro de la sección de F29
+                    fila_target = page.locator("tr:has-text('Pendiente')").first
+                
+                if await fila_target.count() > 0:
+                    texto_periodo = await fila_target.locator("td").first.inner_text()
+                    await self.log(f"Periodo detectado: {texto_periodo.strip()} ✅")
                     
                     # El botón 'Pendiente' suele ser el link
-                    btn_pendiente = fila_diciembre.locator("text=Pendiente")
+                    btn_pendiente = fila_target.locator("text=Pendiente")
                     
                     await self.log("Haciendo clic en 'Pendiente' para entrar al formulario...")
                     async with page.expect_navigation():
@@ -808,14 +820,14 @@ class SIIScraper:
                         await self.log("✅ Declaración sin pago determinado o en $0.")
 
                     return {
-                        "periodo": "Diciembre 2025",
+                        "periodo": texto_periodo.strip() if 'texto_periodo' in locals() else "Desconocido",
                         "url": page.url,
                         "datos": resultados,
                         "pago_requerido": total_a_pagar > 0,
                         "monto_pago": total_a_pagar
                     }
                 else:
-                    print(f"[{self.rut}]  No se encontr la fila 'Diciembre 2025' en las alertas.")
+                    print(f"[{self.rut}]  No se encontró el periodo solicitado ({mes} {anio} - pendiente) en las alertas.")
                     return None
 
             except Exception as e:
